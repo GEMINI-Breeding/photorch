@@ -31,7 +31,7 @@ fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = F
 ```
 ### Fit A/Ci curves
 ```bash
-fvcbmMAGIC043,recordweights = fitACi.run(fvcbmMAGIC043,learn_rate= 0.08, device=device_fit, maxiteration = 20500, minloss= 1,recordweightsTF=True)
+fvcbm,recordweights = fitACi.run(fvcbm,learn_rate= 0.08, device=device_fit, maxiteration = 20500, minloss= 1,recordweightsTF=True)
 ```
 ### Get the fitted data
 ```bash
