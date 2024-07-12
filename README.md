@@ -55,3 +55,7 @@ id = lcd.IDs[id_index]
 indices_id = lcd.getIndicesbyID(id)
 A_id = A[indices_id]
 ```
+### Get the original (preprocessed) Licord data by ID
+```bash
+A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[i])
+```
