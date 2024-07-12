@@ -16,6 +16,7 @@ import pandas as pd
 ```
 ### Load data
 Load the example CSV file. Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it.
+The loaded data frame should have columns with titles 'CurveID', 'FittingGroup', 'Ci', 'A', 'Qin', and 'Tleaf'. Each A/Ci curve should have a unique 'CurveID'. The data in the 'CurveID' and 'FittingGroup' columns should be integers.
 ```bash
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
 lcd = fitACi.initD.initLicordata(dftest, preprocess=True)
