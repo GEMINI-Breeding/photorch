@@ -15,6 +15,7 @@ import fitaci
 import pandas as pd
 ```
 ### Load data
+Load the example CSV file. Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it.
 ```bash
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
 lcd = fitACi.initD.initLicordata(dftest, preprocess=True)
