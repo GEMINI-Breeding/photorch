@@ -33,9 +33,22 @@ fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = F
 ```bash
 fvcbm,recordweights = fitACi.run(fvcbm,learn_rate= 0.08, device=device_fit, maxiteration = 20500, minloss= 1,recordweightsTF=True)
 ```
-### Get the fitted data
+### Get the fitted parameters
 ```bash
 Vcmax25 = fvcbm.Vcmax25
 dHa_Vcmax = fvcbm.TempResponse.dHa_Vcmax
 alpha = fvcbm.LightResponse.dHa_Vcmax
+```
+### Get fitted A/Ci curves
+```bash
+A, Ac, Aj, Ap, Gamma = fvcbm()
+```
+
+### Get fitted A/Ci curves by ID
+```bash
+A, Ac, Aj, Ap, Gamma = fvcbm()
+id_index = 0
+id = lcd.IDs[id_index]
+indices_id = lcd.getIndicesbyID(id)
+A_id = A[indices_id]
 ```
