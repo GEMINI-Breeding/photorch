@@ -18,7 +18,8 @@ import pandas as pd
 ```bash
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
 lcd = fitACi.initD.initLicordata(dftest, preprocess=True)
-lcd.setLightRespID(118)
+id_lresp= 118
+lcd.setLightRespID(id_lresp)
 ```
 ### Define the device
 ```bash
