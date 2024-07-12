@@ -8,8 +8,8 @@ pip install pytorch
 pip install numpy
 pip install scipy
 pip install pandas
-
-## Usage
+```bash
+# Usage
 import fitaci
 
 lcdtest = pd.read_csv('dfMAGIC043_lr.csv')
