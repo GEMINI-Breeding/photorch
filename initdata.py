@@ -80,13 +80,13 @@ class initLicordata():
         self.device = 'cpu'
         IDs = np.unique(all_IDs)
 
-        pidname = 'FittingGroup'
-        all_PIDs = LCdata[pidname].values
-        PIDs_uq = np.unique(all_PIDs)
-        self.num_PIDs = len(PIDs_uq)
+        fgname = 'FittingGroup'
+        all_FGs = LCdata[fgname].values
+        FGs_uq = np.unique(all_FGs)
+        self.num_FGs = len(FGs_uq)
 
         self.IDs = np.array([])
-        self.PIDs = np.array([])
+        self.FGs = np.array([])
 
         self.A = torch.empty((0,))  # net photosynthesis
         self.Q = torch.empty((0,)) # PPFD
@@ -119,10 +119,10 @@ class initLicordata():
                 continue
 
             self.IDs = np.append(self.IDs, id)
-            pid = LCdata[pidname].iloc[indices[0]]
-            # get the idex of the pid in PIDs_uq
-            pid_idx = np.where(PIDs_uq == pid)[0][0]
-            self.PIDs = np.append(self.PIDs, pid_idx)
+            fg = LCdata[fgname].iloc[indices[0]]
+            # get the idex of the fg in FGs_uq
+            fg_idx = np.where(FGs_uq == fg)[0][0]
+            self.FGs = np.append(self.FGs, fg_idx)
 
             if preprocess:
                 A, Ci, indices = preprocessCurve(A, Ci, indices, smoothingwindow, up_treshold, down_treshold)
@@ -187,10 +187,10 @@ class initLicordata():
 
     def getFitGroupbyID(self, ID):
         try:
-            PID = self.PIDs[np.where(self.IDs == ID)[0][0]]
+            fg = self.FGs[np.where(self.IDs == ID)[0][0]]
         except:
             raise ValueError('ID', ID, 'not found')
-        return PID
+        return fg
 
     def setLightRespID(self, ID):
         try:

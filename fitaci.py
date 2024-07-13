@@ -8,6 +8,12 @@ def get_rmse_loss(An_o, An_r):
     rmse = torch.sqrt(torch.mean((An_o - An_r) ** 2))
     return rmse
 
+class modelresult():
+    def __init__(self, fvcbm_fit: initM.FvCB, loss_all: torch.tensor, allweights: dict = None):
+        self.fvcbm = fvcbm_fit
+        self.losses = loss_all
+        self.allweights = allweights
+
 def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, minloss = 3, recordweightsTF = False):
     start_time = time.time()
 
@@ -73,9 +79,11 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, 
     elapsed_time = end_time - start_time
     print(f'Fitting time: {elapsed_time:.4f} seconds')
     if recordweightsTF:
-        return fvcbm, recordweights.allweights
+        modelresult_out = modelresult(fvcbm, loss_all, recordweights.allweights)
     else:
-        return fvcbm
+        modelresult_out = modelresult(fvcbm, loss_all, None)
+
+    return modelresult_out
 
 def getVadlidTPU(fvcbm:initM.FvCB, lcd:initD.initLicordata, threshold_jp: float = 0.5):
 
