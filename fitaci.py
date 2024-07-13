@@ -49,7 +49,7 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, 
 
         optimizer.zero_grad()
 
-        An_o, Ac_o, Aj_o, Ap_o, _ = fvcbm()
+        An_o, Ac_o, Aj_o, Ap_o = fvcbm()
         loss = criterion(fvcbm, An_o, Ac_o, Aj_o, Ap_o)
 
         loss.backward()
@@ -87,7 +87,7 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, 
 
 def getVadlidTPU(fvcbm:initM.FvCB, lcd:initD.initLicordata, threshold_jp: float = 0.5):
 
-    A, Ac, Aj, Ap, _ = fvcbm()
+    A, Ac, Aj, Ap = fvcbm()
     IDs = lcd.IDs
 
     last2diff = Aj[lcd.indices+lcd.lengths-1]-Ap[lcd.indices+lcd.lengths-1]

@@ -321,9 +321,9 @@ class FvCB(nn.Module):
         ac = self.Gamma_Cc * wc - self.Rd
         aj = self.Gamma_Cc * wj - self.Rd
         ap = self.Gamma_Cc * wp - self.Rd
-        gamma_all = (self.Gamma + self.Kco * self.Rd / self.Vcmax) / (1 - self.Rd / self.Vcmax)
+        # gamma_all = (self.Gamma + self.Kco * self.Rd / self.Vcmax) / (1 - self.Rd / self.Vcmax)
 
-        return a, ac, aj, ap, gamma_all
+        return a, ac, aj, ap
 
 
 
