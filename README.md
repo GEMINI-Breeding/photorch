@@ -46,12 +46,12 @@ alpha = fvcbm.LightResponse.dHa_Vcmax
 ```
 ### Get fitted A/Ci curves
 ```bash
-A, Ac, Aj, Ap, Gamma = fvcbm()
+A, Ac, Aj, Ap = fvcbm()
 ```
 
 ### Get fitted A/Ci curves by ID
 ```bash
-A, Ac, Aj, Ap, Gamma = fvcbm()
+A, Ac, Aj, Ap = fvcbm()
 id_index = 0
 id = lcd.IDs[id_index]
 indices_id = lcd.getIndicesbyID(id)
