@@ -10,9 +10,9 @@ def get_rmse_loss(An_o, An_r):
 
 class modelresult():
     def __init__(self, fvcbm_fit: initM.FvCB, loss_all: torch.tensor, allweights: dict = None):
-        self.fvcbm = fvcbm_fit
+        self.model = fvcbm_fit
         self.losses = loss_all
-        self.allweights = allweights
+        self.weights = allweights
 
 def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, minloss = 3, recordweightsTF = False):
     start_time = time.time()
