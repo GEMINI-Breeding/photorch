@@ -1,6 +1,6 @@
 import torch
-import initmodels as initM
-import initdata as initD
+import fvcbmodels as initM
+import initphotodata as initD
 import time
 
 # get rmse loss
@@ -12,7 +12,7 @@ class modelresult():
     def __init__(self, fvcbm_fit: initM.FvCB, loss_all: torch.tensor, allweights: dict = None):
         self.model = fvcbm_fit
         self.losses = loss_all
-        self.weights = allweights
+        self.recordweights = allweights
 
 def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, minloss = 3, recordweightsTF = False):
     start_time = time.time()
