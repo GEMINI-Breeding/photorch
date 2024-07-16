@@ -102,3 +102,4 @@ def getVadlidTPU(fvcbm:initM.FvCB, lcd:initD.initLicordata, threshold_jp: float 
     A_new =  torch.min(torch.stack((Ac, Aj, Ap)), dim=0).values
     return A_new, mask_vali
 
+

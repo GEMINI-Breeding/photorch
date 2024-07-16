@@ -17,6 +17,18 @@ import pandas as pd
 ### Load data
 Load the example CSV file. Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it.
 The loaded data frame should have columns with titles 'CurveID', 'FittingGroup', 'Ci', 'A', 'Qin', and 'Tleaf'. Each A/Ci curve should have a unique 'CurveID'. The data in the 'CurveID' and 'FittingGroup' columns should be integers.
+
+The data to be loaded should be:
+
+| CurveID | FittingGroup | Ci  | A  | Qin  | Tleaf |
+|---------|--------------|-----|----|------|-------|
+| 1       | 1            | 200 | 20 | 2000 | 25    |
+| 1       | 1            | 400 | 30 | 2000 | 25    |
+| 1       | 1            | 600 | 40 | 2000 | 25    |
+| 2       | 1            | 200 | 25 | 2000 | 30    |
+| 2       | 1            | 400 | 35 | 2000 | 30    |
+| 2       | 1            | 700 | 55 | 2000 | 30    |
+
 ```bash
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
 lcd = fitACi.initD.initLicordata(dftest, preprocess=True)
@@ -29,6 +41,10 @@ device_fit = 'cpu'
 lcd.todevice(torch.device(device_fit)) # if device is cuda, then execute this line
 ```
 ### Initialize FvCB model
+If 'onefit' is set to 'True', all curves in a fitting group will share the same set of Vcmax25, Jmax25, TPU25, and Rd25 (or Vcmax etc. if TempResp_type is 0).
+Otherwise, each curve will have its own set of these four main parameters but share the same light and temperature response parameters for the fitting group.
+
+If no light response curve is specified, set 'LightResp_type' to 0.
 ```bash
 fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False, fitgm=False)
 ```
@@ -40,9 +56,18 @@ fvcbm = fitresult.model
 ### Get fitted parameters
 The main parameters are stored in the 'fvbm'. The temperature response parameters are in 'fvcbm.TempResponse', just like the light response parameters.
 ```bash
-Vcmax25 = fvcbm.Vcmax25
-dHa_Vcmax = fvcbm.TempResponse.dHa_Vcmax
-alpha = fvcbm.LightResponse.dHa_Vcmax
+id_index = 0
+id = int(lcd.IDs[id_index])
+fg_index =  int(lcd.FGs[id_index])
+if fvcbm.onefit:
+    Vcmax25_id = fvcbmMAGIC043.Vcmax25[id_index]
+    Jmax25_id = fvcbmMAGIC043.Jmax25[id_index]
+else:
+    Vcmax25_id = fvcbmMAGIC043.Vcmax25[fg_index]
+    Jmax25_id = fvcbmMAGIC043.Jmax25[fg_index]
+
+dHa_Vcmax = fvcbmMAGIC043.TempResponse.dHa_Vcmax[fg_index]
+alpha = fvcbmMAGIC043.LightResponse.alpha[fg_index]
 ```
 ### Get fitted A/Ci curves
 ```bash
