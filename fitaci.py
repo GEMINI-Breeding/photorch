@@ -85,17 +85,17 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, 
 
     return modelresult_out
 
-def getVadlidTPU(fvcbm:initM.FvCB, lcd:initD.initLicordata, threshold_jp: float = 0.5):
+def getVadlidTPU(fvcbm:initM.FvCB, threshold_jp: float = 0.5):
 
     A, Ac, Aj, Ap = fvcbm()
-    IDs = lcd.IDs
+    IDs = fvcbm.lcd.IDs
 
-    last2diff = Aj[lcd.indices+lcd.lengths-1]-Ap[lcd.indices+lcd.lengths-1]
+    last2diff = Aj[fvcbm.lcd.indices + fvcbm.lcd.lengths-1]-Ap[fvcbm.lcd.indices + fvcbm.lcd.lengths-1]
     mask_vali = last2diff > threshold_jp
     mask_invali = last2diff < threshold_jp
 
     for i in range(len(IDs)):
-        indices = lcd.getIndicesbyID(IDs[i])
+        indices = fvcbm.lcd.getIndicesbyID(IDs[i])
         if mask_invali[i]:
             Ap[indices] = Ap[indices] + 1000
 

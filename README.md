@@ -50,7 +50,7 @@ fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = F
 ```
 ### Fit A/Ci curves
 ```bash
-fitresult = fitACi.run(fvcbm,learn_rate= 0.08, device=device_fit, maxiteration = 20500, minloss= 1,recordweightsTF=True)
+fitresult = fitACi.run(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 20000, minloss= 1, recordweightsTF=False)
 fvcbm = fitresult.model
 ```
 ### Get fitted parameters
@@ -66,8 +66,8 @@ else:
     Vcmax25_id = fvcbmMAGIC043.Vcmax25[fg_index]
     Jmax25_id = fvcbmMAGIC043.Jmax25[fg_index]
 
-dHa_Vcmax = fvcbmMAGIC043.TempResponse.dHa_Vcmax[fg_index]
-alpha = fvcbmMAGIC043.LightResponse.alpha[fg_index]
+dHa_Vcmax_id = fvcbmMAGIC043.TempResponse.dHa_Vcmax[fg_index]
+alpha_id = fvcbmMAGIC043.LightResponse.alpha[fg_index]
 ```
 ### Get fitted A/Ci curves
 ```bash
