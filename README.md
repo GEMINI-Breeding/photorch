@@ -31,7 +31,9 @@ The data to be loaded should be:
 
 ```bash
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
+# initialize the data, and preprocess the data
 lcd = fitACi.initD.initLicordata(dftest, preprocess=True)
+# specify the ID of the light response curve, if no light response curve, ignore this line
 id_lresp= 118
 lcd.setLightRespID(id_lresp)
 ```
@@ -46,6 +48,7 @@ Otherwise, each curve will have its own set of these four main parameters but sh
 
 If no light response curve is specified, set 'LightResp_type' to 0.
 ```bash
+# initialize the model
 fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False, fitgm=False)
 ```
 ### Fit A/Ci curves

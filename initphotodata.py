@@ -36,11 +36,6 @@ def preprocessCurve(A, Ci, indices, smoothingwindow = 10, up_treshold=0.06, down
 
     from scipy.signal import savgol_filter
 
-    sorted_indices = np.argsort(Ci)
-    A = A[sorted_indices]
-    Ci = Ci[sorted_indices]
-    indices = indices[sorted_indices]
-
     if len(A[Ci > 600]) > smoothingwindow*3:
         A[Ci > 600] = savgol_filter(A[Ci > 600], smoothingwindow, 1)
 
@@ -112,6 +107,11 @@ class initLicordata():
             # smooth A values where Ci > 500
             A = LCdata['A'].iloc[indices].to_numpy()
             Ci = LCdata['Ci'].iloc[indices].to_numpy()
+
+            sorted_indices = np.argsort(Ci)
+            A = A[sorted_indices]
+            Ci = Ci[sorted_indices]
+            indices = indices[sorted_indices]
 
             # if there are Ci less than 0
             if np.sum(Ci < 0) > 0:

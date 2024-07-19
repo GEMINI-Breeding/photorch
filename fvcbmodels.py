@@ -112,17 +112,23 @@ class TemperatureResponse(nn.Module):
         self.R_Tleaf = self.TRparam.R * self.Tleaf
         self.R_kelvin = self.TRparam.R * self.TRparam.Troom
         self.R_kelvin = self.R_kelvin.to(device)
+        # repeat dHa_Rd with self.num_FGs repeated
+        self.dHa_Rd = self.TRparam.dHa_Rd.repeat(self.num_FGs).to(device)
+        self.Rd_tw = self.tempresp_fun1(onetensor, self.dHa_Rd)
         if self.type == 0:
-            self.getVcmax = lambda x: x
-            self.getJmax = lambda x: x
-            self.getRd = lambda x: x
-            self.getTPU = lambda x: x
+            self.dHa_Vcmax = self.TRparam.dHa_Vcmax.repeat(self.num_FGs).to(device)
+            self.dHa_Jmax = self.TRparam.dHa_Jmax.repeat(self.num_FGs).to(device)
+            self.dHa_TPU = self.TRparam.dHa_TPU.repeat(self.num_FGs).to(device)
+            self.Vcmax_tw = self.tempresp_fun1(onetensor, self.dHa_Vcmax)
+            self.Jmax_tw = self.tempresp_fun1(onetensor, self.dHa_Jmax)
+            self.TPU_tw = self.tempresp_fun1(onetensor, self.dHa_TPU)
+            self.getVcmax = self.getVcmaxF0
+            self.getJmax = self.getJmaxF0
+            self.getRd = self.getRdF0
+            self.getTPU = self.getRdF0
             print('Temperature response type 0: No temperature response.')
 
         elif self.type == 1:
-            # repeat dHa_Rd with self.num_FGs repeated
-            self.dHa_Rd = self.TRparam.dHa_Rd.repeat(self.num_FGs).to(device)
-            self.Rd_tw = self.tempresp_fun1(onetensor, self.dHa_Rd)
             # initial paramters with self.num_FGs repeated
             self.dHa_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_Vcmax)
             self.dHa_Jmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_Jmax)
@@ -134,8 +140,6 @@ class TemperatureResponse(nn.Module):
             print('Temperature response type 1: dHa_Vcmax, dHa_Jmax, dHa_TPU will be fitted.')
 
         elif self.type == 2:
-            self.dHa_Rd = self.TRparam.dHa_Rd.repeat(self.num_FGs).to(device)
-            self.Rd_tw = self.tempresp_fun1(onetensor, self.dHa_Rd)
             self.dHa_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_Vcmax)
             self.dHa_Jmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_Jmax)
             self.dHa_TPU = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_TPU)
@@ -188,6 +192,18 @@ class TemperatureResponse(nn.Module):
         rec_Top = 1/Topt
         k = k_1 * (1 + torch.exp(dHd_R * (rec_Top - self.rec_Troom) - log_dHd_dHa)) / (1 + torch.exp(dHd_R * (rec_Top - self.rec_Tleaf) - log_dHd_dHa))
         return k
+
+    def getVcmaxF0(self, Vcmax25):
+        Vcmax = Vcmax25 * self.Vcmax_tw
+        return Vcmax
+
+    def getJmaxF0(self, Jmax25):
+        Jmax = Jmax25 * self.Jmax_tw
+        return Jmax
+
+    def getTPUF0(self, TPU25):
+        TPU = TPU25 * self.TPU_tw
+        return TPU
 
     def getRdF0(self, Rd25):
         Rd = Rd25 * self.Rd_tw
@@ -287,7 +303,7 @@ class FvCB(nn.Module):
             self.gm = nn.Parameter(torch.ones(self.lcd.num_FGs))
         else:
             self.Cc = self.lcd.Ci
-
+        
         self.fitgamma = fitgamma
         self.Gamma25 = torch.tensor(42.75).to(self.lcd.device)
         if self.fitgamma:
@@ -347,6 +363,13 @@ class FvCB(nn.Module):
             if self.lcd.num_FGs > 1:
                 gm = torch.repeat_interleave(gm[self.lcd.FGs], self.lcd.lengths, dim=0)
             self.Cc = self.lcd.Ci - self.lcd.A / gm
+
+        # if self.fitRd:
+        #     if self.lcd.num_FGs > 1:
+        #         rd25 = torch.repeat_interleave(self.Rd25[self.lcd.FGs], self.lcd.lengths, dim=0)
+        #     else:
+        #         rd25 = self.Rd25
+        #     self.Rd = self.TempResponse.getRd(rd25)
 
         if self.fitgamma:
             if self.lcd.num_FGs > 1:
@@ -482,6 +505,7 @@ class Loss(nn.Module):
         Acj_o_diff_abs = torch.abs(Acj_o_diff)
         Acj_o_diff = self.relu(Acj_o_diff)
         Ajc_o_diff = self.relu(Ajc_o_diff)
+
 
         for i in range(fvc_model.curvenum):
 
