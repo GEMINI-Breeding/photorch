@@ -56,11 +56,11 @@ fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = F
 fitresult = fitACi.run(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 20000, minloss= 1, recordweightsTF=False)
 fvcbm = fitresult.model
 ```
-### Get fitted parameters
+### Get fitted parameters by ID
 The main parameters are stored in the 'fvbm'. The temperature response parameters are in 'fvcbm.TempResponse', just like the light response parameters.
 ```bash
 id_index = 0
-id = int(lcd.IDs[id_index])
+id = int(lcd.IDs[id_index]) # target ID
 fg_index =  int(lcd.FGs[id_index])
 if fvcbm.onefit:
     Vcmax25_id = fvcbmMAGIC043.Vcmax25[id_index]

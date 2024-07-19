@@ -300,7 +300,7 @@ class FvCB(nn.Module):
 
         self.fitgm = fitgm
         if self.fitgm:
-            self.gm = nn.Parameter(torch.ones(self.lcd.num_FGs))
+            self.gm = nn.Parameter(torch.ones(self.lcd.num_FGs)*10)
         else:
             self.Cc = self.lcd.Ci
         
@@ -402,7 +402,7 @@ class FvCB(nn.Module):
         j = self.LightResponse.getJ(self.Jmax)
         wj = j * self.Cc / (4 * self.Cc + 8 * self.Gamma)
         cc_gamma = (self.Cc - self.Gamma * (1 + self.alphaG))
-        cc_gamma = torch.clamp(cc_gamma, min=0.0001)
+        cc_gamma = torch.clamp(cc_gamma, min=0.01)
         wp = 3 * self.TPU * self.Cc / cc_gamma
 
         # w_min = torch.min(torch.stack((wc, wj, wp)), dim=0).values
@@ -458,7 +458,7 @@ class Loss(nn.Module):
             # make correlation between Jmax25 and Vcmax25 be 0.7
             loss += corrloss.getvalue(fvc_model.Jmax25[self.mask_nolightresp], targetR=0.7)
             # make correlation between Rd25 and 0.015*Vcmax25 be 0.4
-            loss += corrloss.getvalue(fvc_model.Rd25[self.mask_nolightresp], targetR=0.4)
+            # loss += corrloss.getvalue(fvc_model.Rd25[self.mask_nolightresp], targetR=0.4)
             # loss += self.mse(fvc_model.Rd25, 0.015 * fvc_model.Vcmax25) * 0.1
 
         if fvc_model.curvenum > 1:
