@@ -40,9 +40,6 @@ class initTRparameters(nn.Module):
         # self.dS_gm = torch.tensor(1.4) #Fitting photosynthetic carbon dioxide response curves for C3 leaves
         # self.Topt_gm = self.dHd_gm/(self.dS_gm-self.R * torch.log(self.dHa_gm/(self.dHd_gm-self.dHa_gm)))
 
-        #different species have different parameters
-    # Temperature response of parameters of a biochemically based model of photosynthesis. II. A review of experimental data
-
 
 class LightResponse(nn.Module):
     def __init__(self, lcd, lr_type: int = 0):
@@ -496,6 +493,9 @@ class Loss(nn.Module):
         # penalty that last Aj is larger than Ac
         penalty_jc = torch.clamp(Aj_o[self.end_indices] - Ac_o[self.end_indices], min=0)
         loss += torch.sum(penalty_jc)
+        ## penalty that first Ac is larger than Aj
+        # penalty_cj = torch.clamp(Ac_o[self.indices_start] - Aj_o[self.indices_start], min=0)
+        # loss += torch.sum(penalty_cj)
 
         Acj_o_diff = Ac_o - Aj_o
         Ajc_o_diff = -Acj_o_diff
@@ -516,6 +516,11 @@ class Loss(nn.Module):
             index_closest = torch.argmin(Acj_o_diff_abs[index_start:index_end])
             Aj_inter = Aj_o[index_start+index_closest]
             Ap_inter = Ap_o[index_start+index_closest]
+
+            # startdiff = Acj_o_diff_abs[index_start]
+            # interdiff = Acj_o_diff_abs[index_start+index_closest]
+            # # penalty that interdiff not larger than startdiff
+            # penalty_inter = penalty_inter + torch.clamp(startdiff - interdiff + 2, min=0)
 
             # penalty that Ap is less than the intersection of Ac and Aj
             penalty_inter = penalty_inter + 5 * torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0)

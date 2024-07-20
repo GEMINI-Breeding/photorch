@@ -16,7 +16,7 @@ import pandas as pd
 ```
 ### Load data
 Load the example CSV file. Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it.
-The loaded data frame should have columns with titles 'CurveID', 'FittingGroup', 'Ci', 'A', 'Qin', and 'Tleaf'. Each A/Ci curve should have a unique 'CurveID'. The data in the 'CurveID' and 'FittingGroup' columns should be integers.
+The loaded data frame should have columns with titles 'CurveID', 'FittingGroup', 'Ci', 'A', 'Qin', and 'Tleaf'. Each A/Ci curve should have a unique 'CurveID'.
 
 The data to be loaded should be:
 
@@ -43,7 +43,7 @@ device_fit = 'cpu'
 lcd.todevice(torch.device(device_fit)) # if device is cuda, then execute this line
 ```
 ### Initialize FvCB model
-If 'onefit' is set to 'True', all curves in a fitting group will share the same set of Vcmax25, Jmax25, TPU25, and Rd25 (or Vcmax etc. if TempResp_type is 0).
+If 'onefit' is set to 'True', all curves in a fitting group will share the same set of Vcmax25, Jmax25, TPU25, and Rd25.
 Otherwise, each curve will have its own set of these four main parameters but share the same light and temperature response parameters for the fitting group.
 
 If no light response curve is specified, set 'LightResp_type' to 0.
