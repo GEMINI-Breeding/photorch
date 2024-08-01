@@ -488,8 +488,16 @@ class Loss(nn.Module):
 
         # add constraint loss for last point
         # penalty that last Ap is larger than Ac and Aj
-        penalty_pj = torch.clamp(Ap_o[self.end_indices] - Aj_o[self.end_indices], min=0)
-        loss += torch.sum(penalty_pj[self.mask_fitAp]) * 0.15
+        if len(self.mask_fitAp) > 0:
+            Ap_jc_diff = Ap_o[self.end_indices] - Aj_o[self.end_indices]
+            penalty_pj = torch.clamp(Ap_jc_diff[self.mask_fitAp], min=0)
+            loss += torch.sum(penalty_pj) * 0.15
+
+        # if len(~self.mask_fitAp) > 0:
+        #     Ajc_p_diff = 1.5 * Aj_o[self.end_indices] - Ap_o[self.end_indices]
+        #     penalty_jp = torch.clamp(Ajc_p_diff[~self.mask_fitAp], min=0)
+        #     loss += torch.sum(penalty_jp)
+
         # penalty that last Aj is larger than Ac
         penalty_jc = torch.clamp(Aj_o[self.end_indices] - Ac_o[self.end_indices], min=0)
         loss += torch.sum(penalty_jc)
