@@ -2,7 +2,7 @@
 
 PhoTorch is a robust and generalized photosynthesis biochemical model fitting package using a PyTorch-based optimizer.
 
-## Installation
+## Installation of dependencies
 ```bash
 pip install pytorch
 pip install numpy
@@ -10,6 +10,8 @@ pip install scipy
 pip install pandas
 ```
 ## Usage
+After installing the dependencies, download the package and import it into your Python script.
+
 ```bash
 import fitaci
 import pandas as pd
