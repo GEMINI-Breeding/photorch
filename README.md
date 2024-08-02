@@ -62,17 +62,17 @@ fvcbm = fitresult.model
 The main parameters are stored in the 'fvbm'. The temperature response parameters are in 'fvcbm.TempResponse', just like the light response parameters.
 ```bash
 id_index = 0
-id = int(lcd.IDs[id_index]) # target ID
-fg_index =  int(lcd.FGs[id_index])
+id = int(lcd.IDs[id_index]) # target curve ID
+fg_index =  int(lcd.FGs[id_index]) # index of the corresponding fitting group
 if fvcbm.onefit:
-    Vcmax25_id = fvcbmMAGIC043.Vcmax25[id_index]
-    Jmax25_id = fvcbmMAGIC043.Jmax25[id_index]
+    Vcmax25_id = fvcbm.Vcmax25[id_index]
+    Jmax25_id = fvcbm.Jmax25[id_index]
 else:
-    Vcmax25_id = fvcbmMAGIC043.Vcmax25[fg_index]
-    Jmax25_id = fvcbmMAGIC043.Jmax25[fg_index]
+    Vcmax25_id = fvcbm.Vcmax25[fg_index]
+    Jmax25_id = fvcbm.Jmax25[fg_index]
 
-dHa_Vcmax_id = fvcbmMAGIC043.TempResponse.dHa_Vcmax[fg_index]
-alpha_id = fvcbmMAGIC043.LightResponse.alpha[fg_index]
+dHa_Vcmax_id = fvcbm.TempResponse.dHa_Vcmax[fg_index]
+alpha_id = fvcbm.LightResponse.alpha[fg_index]
 ```
 ### Get fitted A/Ci curves
 ```bash
