@@ -34,10 +34,8 @@ The data to be loaded should be:
 ```bash
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
 # initialize the data, and preprocess the data
-lcd = fitACi.initD.initLicordata(dftest, preprocess=True)
-# specify the ID of the light response curve, if no light response curve, ignore this line
-id_lresp= 118
-lcd.setLightRespID(id_lresp)
+# specify the ID of the light response curve, if no light response curve, input None
+lcd = fitACi.initD.initLicordata(dftest, preprocess=True, lightresp_id = 118)
 ```
 ### Define the device
 ```bash

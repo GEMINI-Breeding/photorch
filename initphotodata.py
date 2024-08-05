@@ -69,7 +69,7 @@ def preprocessCurve(A, Ci, indices, smoothingwindow = 10, up_treshold=0.06, down
     return A, Ci, indices
 
 class initLicordata():
-    def __init__(self, LCdata, preprocess = True, smoothingwindow = 10, up_treshold=0.06, down_treshold=0.06):
+    def __init__(self, LCdata, preprocess = True, lightresp_id = None, smoothingwindow = 10, up_treshold=0.06, down_treshold=0.06):
         idname = 'CurveID'
         all_IDs = LCdata[idname].values
         self.device = 'cpu'
@@ -124,10 +124,12 @@ class initLicordata():
             fg_idx = np.where(FGs_uq == fg)[0][0]
             self.FGs = np.append(self.FGs, fg_idx)
 
-            if preprocess:
-                A, Ci, indices = preprocessCurve(A, Ci, indices, smoothingwindow, up_treshold, down_treshold)
-
-            self.mask_lightresp = torch.cat((self.mask_lightresp, torch.tensor([False])))
+            if lightresp_id is not None and id == lightresp_id:
+                self.mask_lightresp = torch.cat((self.mask_lightresp, torch.tensor([True])))
+            else:
+                self.mask_lightresp = torch.cat((self.mask_lightresp, torch.tensor([False])))
+                if preprocess:
+                    A, Ci, indices = preprocessCurve(A, Ci, indices, smoothingwindow, up_treshold, down_treshold)
 
             self.A = torch.cat((self.A, torch.tensor(A)))
             self.Q = torch.cat((self.Q, torch.tensor(LCdata['Qin'].iloc[indices].to_numpy())))
@@ -192,12 +194,12 @@ class initLicordata():
             raise ValueError('ID', ID, 'not found')
         return fg
 
-    def setLightRespID(self, ID):
-        try:
-            idx_ID = np.where(self.IDs == ID)[0][0]
-        except:
-            raise ValueError('ID', ID, 'not found')
-        self.mask_lightresp[idx_ID] = True
+    # def setLightRespID(self, ID):
+    #     try:
+    #         idx_ID = np.where(self.IDs == ID)[0][0]
+    #     except:
+    #         raise ValueError('ID', ID, 'not found')
+    #     self.mask_lightresp[idx_ID] = True
 
 
 
