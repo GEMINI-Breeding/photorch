@@ -34,8 +34,8 @@ The data to be loaded should be:
 ```bash
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
 # initialize the data, and preprocess the data
-# specify the ID of the light response curve, if no light response curve, input None
-lcd = fitACi.initD.initLicordata(dftest, preprocess=True, lightresp_id = 118)
+# specify the list of light response curve IDs, if no light response curve, input "lightresp_id = None"
+lcd = fitACi.initD.initLicordata(dftest, preprocess=True, lightresp_id = [118])
 ```
 ### Define the device
 ```bash
@@ -47,6 +47,19 @@ If 'onefit' is set to 'True', all curves in a fitting group will share the same 
 Otherwise, each curve will have its own set of these four main parameters but share the same light and temperature response parameters for the fitting group.
 
 If no light response curve is specified, set 'LightResp_type' to 0.
+
+LightResp_type 0 is using rectangular hyperbola equation but without fitting the alpha.
+
+LightResp_type 1 is using rectangular hyperbola equation and fitting the alpha.
+
+LightResp_type 2 is using rectangular hyperbola equation and fitting the alpha and theta.
+
+TempResp_type 0 is using Arrhenius equation but without fitting the dHa.
+
+TempResp_type 1 is using Arrhenius equation and fitting the dHa for Vcmax, Jmax, and TPU.
+
+TempResp_type 2 is using peaked equation and fitting the dHa, Topt for Vcmax, Jmax, and TPU.
+
 ```bash
 # initialize the model
 fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False, fitgm=False)

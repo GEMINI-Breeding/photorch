@@ -32,17 +32,18 @@ def remove_ud_trend(A, Ci, up_treshold = 0.06, down_treshold = 0.06, keepCi = 10
         indices = indices[:downward_trend_start + 1]
     return indices
 
-def preprocessCurve(A, Ci, indices, smoothingwindow = 10, up_treshold=0.06, down_treshold=0.06):
+def preprocessCurve(A, Ci, indices, smoothingwindow = 10, up_treshold=0.06, down_treshold=0.06, lightresp = False):
 
     from scipy.signal import savgol_filter
 
-    if len(A[Ci > 600]) > smoothingwindow*3:
-        A[Ci > 600] = savgol_filter(A[Ci > 600], smoothingwindow, 1)
+    if not lightresp:
+        if len(A[Ci > 600]) > smoothingwindow*3:
+            A[Ci > 600] = savgol_filter(A[Ci > 600], smoothingwindow, 1)
 
-    indices_nup = remove_ud_trend(A, Ci, up_treshold, down_treshold, 1000)
-    A = A[indices_nup]
-    Ci = Ci[indices_nup]
-    indices = indices[indices_nup]
+        indices_nup = remove_ud_trend(A, Ci, up_treshold, down_treshold, 1000)
+        A = A[indices_nup]
+        Ci = Ci[indices_nup]
+        indices = indices[indices_nup]
 
     # cut off the data points where Ci < 0
     # A = A[Ci > 0]
@@ -58,13 +59,14 @@ def preprocessCurve(A, Ci, indices, smoothingwindow = 10, up_treshold=0.06, down
     minA_index = np.argmin(A)
     Ci_amin = Ci[minA_index]
 
-    # drop data points where Ci < Ci_amin and A < A_cimin
-    indices_lci = (Ci > Ci_amin) | (A > A_cimin)
-    # if only one data point is left, keep it
-    if len(indices) - np.sum(indices_lci) > 1:
-        indices = indices[indices_lci]
-        A = A[indices_lci]
-        Ci = Ci[indices_lci]
+    if not lightresp:
+        # drop data points where Ci < Ci_amin and A < A_cimin
+        indices_lci = (Ci > Ci_amin) | (A > A_cimin)
+        # if only one data point is left, keep it
+        if len(indices) - np.sum(indices_lci) > 1:
+            indices = indices[indices_lci]
+            A = A[indices_lci]
+            Ci = Ci[indices_lci]
 
     return A, Ci, indices
 
@@ -124,12 +126,14 @@ class initLicordata():
             fg_idx = np.where(FGs_uq == fg)[0][0]
             self.FGs = np.append(self.FGs, fg_idx)
 
-            if lightresp_id is not None and id == lightresp_id:
+            if lightresp_id is not None and id in lightresp_id:
                 self.mask_lightresp = torch.cat((self.mask_lightresp, torch.tensor([True])))
+                lightcurve = True
             else:
                 self.mask_lightresp = torch.cat((self.mask_lightresp, torch.tensor([False])))
-                if preprocess:
-                    A, Ci, indices = preprocessCurve(A, Ci, indices, smoothingwindow, up_treshold, down_treshold)
+                lightcurve = False
+            if preprocess:
+                A, Ci, indices = preprocessCurve(A, Ci, indices, smoothingwindow, up_treshold, down_treshold, lightcurve)
 
             self.A = torch.cat((self.A, torch.tensor(A)))
             self.Q = torch.cat((self.Q, torch.tensor(LCdata['Qin'].iloc[indices].to_numpy())))
