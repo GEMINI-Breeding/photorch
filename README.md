@@ -52,7 +52,7 @@ LightResp_type 0 is using rectangular hyperbola equation but without fitting the
 
 LightResp_type 1 is using rectangular hyperbola equation and fitting the alpha.
 
-LightResp_type 2 is using rectangular hyperbola equation and fitting the alpha and theta.
+LightResp_type 2 is using non-rectangular hyperbola equation and fitting the alpha and theta.
 
 TempResp_type 0 is using Arrhenius equation but without fitting the dHa.
 
