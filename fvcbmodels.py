@@ -1,11 +1,11 @@
+# PhoTorch
+# FvCB model and loss function
 import torch.nn as nn
 import torch
 
 class initTRparameters(nn.Module):
     def __init__(self):
         super(initTRparameters, self).__init__()
-        # constants
-
         self.R = torch.tensor(0.0083144598)
         self.kelvin = torch.tensor(273.15)
         self.Troom = torch.tensor(25.0) + self.kelvin
@@ -39,7 +39,6 @@ class initTRparameters(nn.Module):
         self.Topt_TPU = self.dHd_TPU/(self.dS_TPU-self.R * torch.log(self.dHa_TPU/(self.dHd_TPU-self.dHa_TPU)))
         # self.dS_gm = torch.tensor(1.4) #Fitting photosynthetic carbon dioxide response curves for C3 leaves
         # self.Topt_gm = self.dHd_gm/(self.dS_gm-self.R * torch.log(self.dHa_gm/(self.dHd_gm-self.dHa_gm)))
-
 
 class LightResponse(nn.Module):
     def __init__(self, lcd, lr_type: int = 0):
@@ -93,7 +92,6 @@ class LightResponse(nn.Module):
         J = alpha * self.Q + Jmax - torch.sqrt(alphaQ_J)
         J = J / (2 * theta)
         return J
-
 
 class TemperatureResponse(nn.Module):
     def __init__(self, lcd, TR_type: int = 0):
@@ -268,8 +266,6 @@ class TemperatureResponse(nn.Module):
         if isinstance(param, nn.Parameter):
             param.requires_grad = fitting
 
-
-
 class FvCB(nn.Module):
     def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False):
         super(FvCB, self).__init__()
@@ -413,8 +409,6 @@ class FvCB(nn.Module):
 
         return a, ac, aj, ap
 
-
-
 class correlationloss():
     def __init__(self, y):
         self.vy = y - torch.mean(y)
@@ -514,7 +508,6 @@ class Loss(nn.Module):
         Acj_o_diff = self.relu(Acj_o_diff)
         Ajc_o_diff = self.relu(Ajc_o_diff)
 
-
         for i in range(fvc_model.curvenum):
 
             index_start = self.indices_start[i]
@@ -531,7 +524,10 @@ class Loss(nn.Module):
             # penalty_inter = penalty_inter + torch.clamp(startdiff - interdiff + 2, min=0)
 
             # penalty that Ap is less than the intersection of Ac and Aj
-            penalty_inter = penalty_inter + 5 * torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0)
+            penalty_inter = penalty_inter + 3 * torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0)
+
+            if self.mask_lightresp[i]:
+                continue
 
             # penalty to make sure part of Aj_o_i is larger than Ac_o_i
             ls_Aj_i = torch.sum(Ajc_o_diff[index_start:index_end])

@@ -1,3 +1,5 @@
+# PhoTorch
+# A/Ci curve optimizer
 import torch
 import fvcbmodels as initM
 import initphotodata as initD
