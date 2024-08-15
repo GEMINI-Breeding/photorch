@@ -189,19 +189,23 @@ class TemperatureResponse(nn.Module):
         return k
 
     def getVcmaxF0(self, Vcmax25):
-        Vcmax = Vcmax25 * self.Vcmax_tw
+        # Vcmax = Vcmax25 * self.Vcmax_tw
+        Vcmax = Vcmax25
         return Vcmax
 
     def getJmaxF0(self, Jmax25):
-        Jmax = Jmax25 * self.Jmax_tw
+        # Jmax = Jmax25 * self.Jmax_tw
+        Jmax = Jmax25
         return Jmax
 
     def getTPUF0(self, TPU25):
-        TPU = TPU25 * self.TPU_tw
+        # TPU = TPU25 * self.TPU_tw
+        TPU = TPU25
         return TPU
 
     def getRdF0(self, Rd25):
-        Rd = Rd25 * self.Rd_tw
+        # Rd = Rd25 * self.Rd_tw
+        Rd = Rd25
         return Rd
 
     def getGammF0(self, Gamma25):
@@ -267,7 +271,7 @@ class TemperatureResponse(nn.Module):
             param.requires_grad = fitting
 
 class FvCB(nn.Module):
-    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False):
+    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, gm=None):
         super(FvCB, self).__init__()
         self.lcd = lcd
         self.Oxy = torch.tensor(213.5)

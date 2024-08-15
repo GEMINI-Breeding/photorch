@@ -138,9 +138,19 @@ class initLicordata():
                 A, Ci, indices = preprocessCurve(A, Ci, indices, smoothingwindow, up_treshold, down_treshold, lightcurve)
 
             self.A = torch.cat((self.A, torch.tensor(A)))
-            self.Q = torch.cat((self.Q, torch.tensor(LCdata['Qin'].iloc[indices].to_numpy())))
+            try:
+                self.Q = torch.cat((self.Q, torch.tensor(LCdata['Qin'].iloc[indices].to_numpy())))
+            except:
+                # fill Q with default value 2000
+                self.Q = torch.cat((self.Q, torch.tensor([2000]*len(indices))))
+                print('Warning: Qin not found, filling with default value 2000')
             self.Ci = torch.cat((self.Ci, torch.tensor(Ci)))
-            self.Tleaf = torch.cat((self.Tleaf,torch.tensor(LCdata['Tleaf'].iloc[indices].to_numpy() + 273.15)))
+            try:
+                self.Tleaf = torch.cat((self.Tleaf,torch.tensor(LCdata['Tleaf'].iloc[indices].to_numpy() + 273.15)))
+            except:
+                # fill Tleaf with default value 25
+                self.Tleaf = torch.cat((self.Tleaf, torch.tensor([25+273.15]*len(indices))))
+                print('Warning: Tleaf not found, filling with default value 25 C (298.15 K)')
 
             # self.gsw = torch.cat((self.gsw, torch.tensor(LCdata['gsw'].iloc[indices].to_numpy())))
             # self.Ca = torch.cat((self.Ca, torch.tensor(LCdata['Ca'].iloc[indices].to_numpy())))
