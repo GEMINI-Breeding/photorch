@@ -16,7 +16,7 @@ class modelresult():
         self.losses = loss_all
         self.recordweights = allweights
 
-def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, minloss = 3, recordweightsTF = False):
+def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, minloss = 3, recordweightsTF = False, fitcorr = False):
     start_time = time.time()
 
     if device == 'cuda':
@@ -26,7 +26,7 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, 
     else:
         loss_all = torch.tensor([])
 
-    criterion = initM.Loss(fvcbm.lcd)
+    criterion = initM.Loss(fvcbm.lcd, 500, fitcorr)
     optimizer = torch.optim.Adam(fvcbm.parameters(), lr=learn_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5000, gamma=0.8)
 
