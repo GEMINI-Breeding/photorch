@@ -48,17 +48,17 @@ Otherwise, each curve will have its own set of these four main parameters but sh
 
 If no light response curve is specified, set 'LightResp_type' to 0.
 
-LightResp_type 0 is using rectangular hyperbola equation but without fitting the alpha.
+LightResp_type 0: using rectangular hyperbola equation but without fitting the alpha.
 
-LightResp_type 1 is using rectangular hyperbola equation and fitting the alpha.
+LightResp_type 1: using rectangular hyperbola equation and fitting the alpha.
 
-LightResp_type 2 is using non-rectangular hyperbola equation and fitting the alpha and theta.
+LightResp_type 2: using non-rectangular hyperbola equation and fitting the alpha and theta.
 
-TempResp_type 0 is Vcmax, Jmax, TPU, and Rd are equal to the Vcmax25, Jmax25, TPU25, and Rd25, respectively.
+TempResp_type 0: Vcmax, Jmax, TPU, and Rd are equal to the Vcmax25, Jmax25, TPU25, and Rd25, respectively.
 
-TempResp_type 1 is using Arrhenius equation and fitting the dHa for Vcmax, Jmax, and TPU.
+TempResp_type 1: using Arrhenius equation and fitting the dHa for Vcmax, Jmax, and TPU.
 
-TempResp_type 2 is using peaked equation and fitting the dHa, Topt for Vcmax, Jmax, and TPU.
+TempResp_type 2: using peaked equation and fitting the dHa, Topt for Vcmax, Jmax, and TPU.
 
 ```bash
 # initialize the model
