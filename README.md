@@ -39,6 +39,7 @@ dftest = pd.read_csv('dfMAGIC043_lr.csv')
 lcd = fitACi.initD.initLicordata(dftest, preprocess=True, lightresp_id = [118])
 ```
 ### Define the device
+'cuda' means an NVIDIA GPU will be used. If you want to use the CPU, set 'device_fit' to 'cpu'.
 ```bash
 device_fit = 'cpu'
 lcd.todevice(torch.device(device_fit)) # if device is cuda, then execute this line
