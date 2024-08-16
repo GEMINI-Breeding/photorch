@@ -44,6 +44,8 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, 
                     self.allweights[name] = param.data.cpu().unsqueeze(0)
                 else:
                     self.allweights[name] = torch.cat((self.allweights[name], param.data.cpu().unsqueeze(0)), dim=0)
+            # add alphaG to the record
+            self.allweights['alphaG'] = model.alphaG.data.cpu().unsqueeze(0)
 
     recordweights = recordweights()
 

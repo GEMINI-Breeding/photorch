@@ -277,7 +277,7 @@ class FvCB(nn.Module):
         self.Oxy = torch.tensor(213.5)
         self.LightResponse = LightResponse(self.lcd, LightResp_type)
         self.TempResponse = TemperatureResponse(self.lcd, TempResp_type)
-        self.alphaG_r = nn.Parameter(torch.ones(self.lcd.num_FGs) * (-5))
+        self.__alphaG_r = nn.Parameter(torch.ones(self.lcd.num_FGs) * (-5))
         self.alphaG = None
 
         self.onefit = onefit
@@ -351,7 +351,7 @@ class FvCB(nn.Module):
         self.TPU = self.TempResponse.getTPU(tpu25)
         self.Rd = self.TempResponse.getRd(rd25)
 
-        self.alphaG = torch.sigmoid(self.alphaG_r) * 3
+        self.alphaG = torch.sigmoid(self.__alphaG_r)
         if self.lcd.num_FGs > 1:
             self.alphaG = torch.repeat_interleave(self.alphaG[self.lcd.FGs], self.lcd.lengths, dim=0)
 
@@ -398,7 +398,7 @@ class FvCB(nn.Module):
         wc = self.Vcmax * self.Cc / (self.Cc + self.Kco)
         j = self.LightResponse.getJ(self.Jmax)
         wj = j * self.Cc / (4 * self.Cc + 8 * self.Gamma)
-        cc_gamma = (self.Cc - self.Gamma * (1 + self.alphaG))
+        cc_gamma = (self.Cc - self.Gamma * (1 + self.alphaG * 3))
         cc_gamma = torch.clamp(cc_gamma, min=0.01)
         wp = 3 * self.TPU * self.Cc / cc_gamma
 
