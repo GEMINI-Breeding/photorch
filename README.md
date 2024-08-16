@@ -19,6 +19,7 @@ import pandas as pd
 ### Load data
 Load the example CSV file. Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it.
 The loaded data frame should have columns with titles 'CurveID', 'FittingGroup', 'Ci', 'A', 'Qin', and 'Tleaf'. Each A/Ci curve should have a unique 'CurveID'.
+If no 'Qin' and 'Tleaf' are available, it will be automatically set to 2000 and 25, respectively.
 
 The data to be loaded should be:
 
