@@ -101,5 +101,5 @@ A_id = A[indices_id]
 ```
 ### Get the (preprocessed) photosynthesis data by ID
 ```bash
-A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[i])
+A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[id_index])
 ```
