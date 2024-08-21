@@ -51,9 +51,9 @@ Otherwise, each curve will have its own set of these four main parameters but sh
 
 If no light response curve is specified, set 'LightResp_type' to 0.
 
-LightResp_type 0: using equation $J = \frac{\alpha Q J_{max}}{\alpha Q + J_{max}}$ but without fitting $\alpha$.
+LightResp_type 0: J is equal to Jmax.
 
-LightResp_type 1: using the same equation with type 0 and fitting $\alpha$.
+LightResp_type 1: using equation $J = \frac{\alpha Q J_{max}}{\alpha Q + J_{max}}$ and fitting $\alpha$.
 
 LightResp_type 2: using equation $J = \frac{\alpha Q + J_{max} - \sqrt{(\alpha Q + J_{max})^2 - 4 \theta \alpha Q J_{max}}}{2 \theta}$ and fitting $\alpha$ and $\theta$.
 

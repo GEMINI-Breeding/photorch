@@ -86,8 +86,8 @@ class LightResponse(nn.Module):
             raise ValueError('LightResponse type should be 0 (no light response), 1 (alhpa), or 2 (alpha and theta)')
 
     def Function0(self, Jmax):
-        J = Jmax * self.Q_alpha / (self.Q_alpha + Jmax)
-        return J
+        # J = Jmax * self.Q_alpha / (self.Q_alpha + Jmax)
+        return Jmax
     def Function1(self, Jmax):
         if self.num_FGs > 1:
             alpha = torch.repeat_interleave(self.alpha[self.FGs], self.lengths, dim=0)
