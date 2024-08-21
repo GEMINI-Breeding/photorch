@@ -210,12 +210,5 @@ class initLicordata():
             raise ValueError('ID', ID, 'not found')
         return fg
 
-    # def setLightRespID(self, ID):
-    #     try:
-    #         idx_ID = np.where(self.IDs == ID)[0][0]
-    #     except:
-    #         raise ValueError('ID', ID, 'not found')
-    #     self.mask_lightresp[idx_ID] = True
-
 
 

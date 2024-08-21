@@ -3,12 +3,27 @@
 import torch.nn as nn
 import torch
 
-class initTRparameters(nn.Module):
+class allparameters(nn.Module):
     def __init__(self):
-        super(initTRparameters, self).__init__()
+        super(allparameters, self).__init__()
+
         self.R = torch.tensor(0.0083144598)
         self.kelvin = torch.tensor(273.15)
         self.Troom = torch.tensor(25.0) + self.kelvin
+        self.oxy = torch.tensor(213.5)
+
+        self.Vcmax25 = torch.tensor(100.0)
+        self.Jmax25 = torch.tensor(200.0)
+        self.TPU25 = torch.tensor(25.0)
+        self.Rd25 = torch.tensor(1.5)
+        self.Kc25 = torch.tensor(404.9)
+        self.Ko25 = torch.tensor(278.4)
+        self.Gamma25 = torch.tensor(42.75)
+        self.alphaG_r = torch.tensor(-5.0)
+        self.gm = torch.tensor(10.0)
+
+        self.alpha = torch.tensor(0.5)
+        self.theta = torch.tensor(0.7)
 
         self.c_Vcmax = torch.tensor(26.35) #Improved temperature response functions for models of Rubisco-limited photosynthesis
         self.c_Jmax = torch.tensor(17.71)   #Fitting photosynthetic carbon dioxide response curves for C3 leaves
@@ -41,13 +56,14 @@ class initTRparameters(nn.Module):
         # self.Topt_gm = self.dHd_gm/(self.dS_gm-self.R * torch.log(self.dHa_gm/(self.dHd_gm-self.dHa_gm)))
 
 class LightResponse(nn.Module):
-    def __init__(self, lcd, lr_type: int = 0):
+    def __init__(self, lcd, lr_type: int = 0, allparams = allparameters()):
         super(LightResponse, self).__init__()
         self.Q = lcd.Q
         self.type = lr_type
         self.FGs = lcd.FGs
         self.lengths = lcd.lengths
         self.num_FGs = lcd.num_FGs
+        self.allparams = allparams
 
         if self.type == 0:
             print('Light response type 0: No light response.')
@@ -57,14 +73,14 @@ class LightResponse(nn.Module):
 
         elif self.type == 1:
             print('Light response type 1: alpha will be fitted.')
-            self.alpha = nn.Parameter(torch.ones(self.num_FGs) * 0.5)
+            self.alpha = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.alpha)
             self.alpha = nn.Parameter(self.alpha)
             self.getJ = self.Function1
 
         elif self.type == 2:
             print('Light response type 2: alpha and theta will be fitted.')
-            self.alpha = nn.Parameter(torch.ones(self.num_FGs) * 0.5)
-            self.theta = nn.Parameter(torch.ones(self.num_FGs) * 0.7)
+            self.alpha = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.alpha)
+            self.theta = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.theta)
             self.getJ = self.Function2
         else:
             raise ValueError('LightResponse type should be 0 (no light response), 1 (alhpa), or 2 (alpha and theta)')
@@ -94,7 +110,7 @@ class LightResponse(nn.Module):
         return J
 
 class TemperatureResponse(nn.Module):
-    def __init__(self, lcd, TR_type: int = 0):
+    def __init__(self, lcd, TR_type: int = 0, allparams =  allparameters()):
         super(TemperatureResponse, self).__init__()
         self.Tleaf = lcd.Tleaf
         self.type = TR_type
@@ -102,18 +118,18 @@ class TemperatureResponse(nn.Module):
         self.lengths = lcd.lengths
         self.num_FGs = lcd.num_FGs
         device = lcd.device
-        self.TRparam = initTRparameters()
+        self.allparams = allparams
         onetensor = torch.ones(1).to(device)
-        self.R_Tleaf = self.TRparam.R * self.Tleaf
-        self.R_kelvin = self.TRparam.R * self.TRparam.Troom
+        self.R_Tleaf = self.allparams.R * self.Tleaf
+        self.R_kelvin = self.allparams.R * self.allparams.Troom
         self.R_kelvin = self.R_kelvin.to(device)
         # repeat dHa_Rd with self.num_FGs repeated
-        self.dHa_Rd = self.TRparam.dHa_Rd.repeat(self.num_FGs).to(device)
+        self.dHa_Rd = self.allparams.dHa_Rd.repeat(self.num_FGs).to(device)
         self.Rd_tw = self.tempresp_fun1(onetensor, self.dHa_Rd)
         if self.type == 0:
-            self.dHa_Vcmax = self.TRparam.dHa_Vcmax.repeat(self.num_FGs).to(device)
-            self.dHa_Jmax = self.TRparam.dHa_Jmax.repeat(self.num_FGs).to(device)
-            self.dHa_TPU = self.TRparam.dHa_TPU.repeat(self.num_FGs).to(device)
+            self.dHa_Vcmax = self.allparams.dHa_Vcmax.repeat(self.num_FGs).to(device)
+            self.dHa_Jmax = self.allparams.dHa_Jmax.repeat(self.num_FGs).to(device)
+            self.dHa_TPU = self.allparams.dHa_TPU.repeat(self.num_FGs).to(device)
             self.Vcmax_tw = self.tempresp_fun1(onetensor, self.dHa_Vcmax)
             self.Jmax_tw = self.tempresp_fun1(onetensor, self.dHa_Jmax)
             self.TPU_tw = self.tempresp_fun1(onetensor, self.dHa_TPU)
@@ -125,9 +141,9 @@ class TemperatureResponse(nn.Module):
 
         elif self.type == 1:
             # initial paramters with self.num_FGs repeated
-            self.dHa_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_Vcmax)
-            self.dHa_Jmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_Jmax)
-            self.dHa_TPU = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_TPU)
+            self.dHa_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.dHa_Vcmax)
+            self.dHa_Jmax = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.dHa_Jmax)
+            self.dHa_TPU = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.dHa_TPU)
             self.getVcmax = self.getVcmaxF1
             self.getJmax = self.getJmaxF1
             self.getTPU = self.getTPUF1
@@ -135,32 +151,32 @@ class TemperatureResponse(nn.Module):
             print('Temperature response type 1: dHa_Vcmax, dHa_Jmax, dHa_TPU will be fitted.')
 
         elif self.type == 2:
-            self.dHa_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_Vcmax)
-            self.dHa_Jmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_Jmax)
-            self.dHa_TPU = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.dHa_TPU)
-            self.Topt_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.Topt_Vcmax)
-            self.Topt_Jmax = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.Topt_Jmax)
-            self.Topt_TPU = nn.Parameter(torch.ones(self.num_FGs) * self.TRparam.Topt_TPU)
+            self.dHa_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.dHa_Vcmax)
+            self.dHa_Jmax = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.dHa_Jmax)
+            self.dHa_TPU = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.dHa_TPU)
+            self.Topt_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.Topt_Vcmax)
+            self.Topt_Jmax = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.Topt_Jmax)
+            self.Topt_TPU = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.Topt_TPU)
             self.getVcmax = self.getVcmaxF2
             self.getJmax = self.getJmaxF2
             self.getTPU = self.getTPUF2
             self.getRd = self.getRdF0
-            self.dHd_Vcmax = self.TRparam.dHd_Vcmax
-            self.dHd_Jmax = self.TRparam.dHd_Jmax
-            self.dHd_TPU = self.TRparam.dHd_TPU
-            self.dHd_R_Vcmax = self.dHd_Vcmax / self.TRparam.R
-            self.dHd_R_Jmax = self.dHd_Jmax / self.TRparam.R
-            self.dHd_R_TPU = self.dHd_TPU / self.TRparam.R
-            self.rec_Troom = 1 / self.TRparam.Troom
+            self.dHd_Vcmax = self.allparams.dHd_Vcmax
+            self.dHd_Jmax = self.allparams.dHd_Jmax
+            self.dHd_TPU = self.allparams.dHd_TPU
+            self.dHd_R_Vcmax = self.dHd_Vcmax / self.allparams.R
+            self.dHd_R_Jmax = self.dHd_Jmax / self.allparams.R
+            self.dHd_R_TPU = self.dHd_TPU / self.allparams.R
+            self.rec_Troom = 1 / self.allparams.Troom
             self.rec_Tleaf = 1 / self.Tleaf
 
             print('Temperature response type 2: dHa_Jmax, dHa_TPU, Topt_Vcmax, Topt_Jmax, Topt_TPU will be fitted.')
         else:
             raise ValueError('TemperatureResponse type should be 0, 1 or 2')
 
-        self.dHa_Gamma = self.TRparam.dHa_Gamma.repeat(self.num_FGs).to(device)
-        self.dHa_Kc = self.TRparam.dHa_Kc.repeat(self.num_FGs).to(device)
-        self.dHa_Ko = self.TRparam.dHa_Ko.repeat(self.num_FGs).to(device)
+        self.dHa_Gamma = self.allparams.dHa_Gamma.repeat(self.num_FGs).to(device)
+        self.dHa_Kc = self.allparams.dHa_Kc.repeat(self.num_FGs).to(device)
+        self.dHa_Ko = self.allparams.dHa_Ko.repeat(self.num_FGs).to(device)
 
         self.Gamma_tw = self.tempresp_fun1(onetensor, self.dHa_Gamma)
         self.Kc_tw = self.tempresp_fun1(onetensor,  self.dHa_Kc)
@@ -271,13 +287,15 @@ class TemperatureResponse(nn.Module):
             param.requires_grad = fitting
 
 class FvCB(nn.Module):
-    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, gm=None):
+    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, allparams =  allparameters()):
         super(FvCB, self).__init__()
         self.lcd = lcd
-        self.Oxy = torch.tensor(213.5)
-        self.LightResponse = LightResponse(self.lcd, LightResp_type)
-        self.TempResponse = TemperatureResponse(self.lcd, TempResp_type)
-        self.__alphaG_r = nn.Parameter(torch.ones(self.lcd.num_FGs) * (-5))
+        self.allparams = allparams
+        self.Oxy = self.allparams.oxy
+        self.LightResponse = LightResponse(self.lcd, LightResp_type, self.allparams)
+        self.TempResponse = TemperatureResponse(self.lcd, TempResp_type,self.allparams)
+
+        self.__alphaG_r = nn.Parameter(torch.ones(self.lcd.num_FGs) * self.allparams.alphaG_r)
         self.alphaG = None
 
         self.onefit = onefit
@@ -285,10 +303,10 @@ class FvCB(nn.Module):
             self.curvenum = self.lcd.num_FGs
         else:
             self.curvenum = self.lcd.num
-        self.Vcmax25 = nn.Parameter(torch.ones(self.curvenum) * 100)
-        self.Jmax25 = nn.Parameter(torch.ones(self.curvenum) * 200)
-        self.TPU25 = nn.Parameter(torch.ones(self.curvenum) * 25)
-        self.Rd25 = nn.Parameter(torch.ones(self.curvenum) * 1.5)
+        self.Vcmax25 = nn.Parameter(torch.ones(self.curvenum) * self.allparams.Vcmax25)
+        self.Jmax25 = nn.Parameter(torch.ones(self.curvenum) * self.allparams.Jmax25)
+        self.TPU25 = nn.Parameter(torch.ones(self.curvenum) * self.allparams.TPU25)
+        self.Rd25 = nn.Parameter(torch.ones(self.curvenum) * self.allparams.Rd25)
 
         self.Vcmax = None
         self.Jmax = None
@@ -297,12 +315,12 @@ class FvCB(nn.Module):
 
         self.fitgm = fitgm
         if self.fitgm:
-            self.gm = nn.Parameter(torch.ones(self.lcd.num_FGs)*10)
+            self.gm = nn.Parameter(torch.ones(self.lcd.num_FGs)*self.allparams.gm)
         else:
             self.Cc = self.lcd.Ci
         
         self.fitgamma = fitgamma
-        self.Gamma25 = torch.tensor(42.75).to(self.lcd.device)
+        self.Gamma25 = self.allparams.Gamma25
         if self.fitgamma:
             self.Gamma25 = nn.Parameter(torch.ones(self.lcd.num_FGs).to(self.lcd.device) * self.Gamma25)
         else:
@@ -312,14 +330,14 @@ class FvCB(nn.Module):
             self.Gamma_Cc = 1 - self.Gamma / self.Cc
             
         self.fitKc = fitKc
-        self.Kc25 = torch.tensor(404.9).to(self.lcd.device)
+        self.Kc25 = self.allparams.Kc25
         if self.fitKc:
             self.Kc25 = nn.Parameter(torch.ones(self.lcd.num_FGs).to(self.lcd.device) * self.Kc25)
         else:
             self.Kc = self.TempResponse.getKc(self.Kc25)
             
         self.fitKo = fitKo
-        self.Ko25 = torch.tensor(278.4).to(self.lcd.device)
+        self.Ko25 = self.allparams.Ko25
         if self.fitKo:
             self.Ko25 = nn.Parameter(torch.ones(self.lcd.num_FGs).to(self.lcd.device) * self.Ko25)
         else:

@@ -67,6 +67,12 @@ TempResp_type 2: using equation $k = k_{25} \exp\left[\frac{\Delta H_a}{R} \left
 # initialize the model
 fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False, fitgm=False)
 ```
+### (Alternatively) Specify default fixed or learnable parameters, and set whether to fit Kc, Ko, gamma, and gm
+```bash
+allparama = fitACi.initM.allparameters()
+allparama.dHa_Vcmax = torch.tensor(40.0)
+fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitgm= False, fitgamma=True, fitKo=False, fitKc=True, allparams=allparama)
+```
 ### Fit A/Ci curves
 ```bash
 fitresult = fitACi.run(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 20000, minloss= 1, recordweightsTF=False)
