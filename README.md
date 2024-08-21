@@ -61,7 +61,7 @@ TempResp_type 0: Vcmax, Jmax, TPU, and Rd are equal to the Vcmax25, Jmax25, TPU2
 
 TempResp_type 1: using equation $k = k_{25} \exp{\left[\frac{\Delta{H_a}}{R}\left(\frac{1}{298}-\frac{1}{T_{leaf}}\right)\right]}$ and fitting $\Delta{H_a}$ for Vcmax, Jmax, and TPU.
 
-TempResp_type 2: using equation $k = k_{25} \exp\left[\frac{\Delta H_a}{R} \left(\frac{1}{298}-\frac{1}{T_{leaf}}\right)\right]  \frac{f\left(298\right)}{f\left(T_{leaf}\right)}$, where $    f(T) = 1+\exp \left[\frac{\Delta H_d}{R}\left(\frac{1}{T_{opt}}-\frac{1}{T} \right)-\ln \left(\frac{\Delta H_d}{\Delta H_a}-1 \right) \right]$, and fitting $\Delta{H_a}$ and $T_{opt}$ for Vcmax, Jmax, and TPU.
+TempResp_type 2: using equation $k = k_{25} \exp\left[\frac{\Delta H_a}{R} \left(\frac{1}{298}-\frac{1}{T_{leaf}}\right)\right]  \frac{f\left(298\right)}{f\left(T_{leaf}\right)}$, where $f(T) = 1+\exp \left[\frac{\Delta H_d}{R}\left(\frac{1}{T_{opt}}-\frac{1}{T} \right)-\ln \left(\frac{\Delta H_d}{\Delta H_a}-1 \right) \right]$, and fitting $\Delta{H_a}$ and $T_{opt}$ for Vcmax, Jmax, and TPU.
 
 ```bash
 # initialize the model
