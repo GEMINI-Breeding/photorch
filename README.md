@@ -4,7 +4,7 @@ PhoTorch is a robust and generalized photosynthesis biochemical model fitting pa
 
 ## Installation of dependencies
 ```bash
-pip install pytorch
+pip install torch
 pip install numpy
 pip install scipy
 pip install pandas
@@ -15,6 +15,7 @@ After installing the dependencies, download the package and import it into your 
 ```bash
 import fitaci
 import pandas as pd
+import torch
 ```
 ### Load data
 Load the example CSV file. Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it.
@@ -50,17 +51,17 @@ Otherwise, each curve will have its own set of these four main parameters but sh
 
 If no light response curve is specified, set 'LightResp_type' to 0.
 
-LightResp_type 0: using rectangular hyperbola equation but without fitting the alpha.
+LightResp_type 0: using equation $J = \frac{\alpha Q J_{max}}{\alpha Q + J_{max}}$ but without fitting $\alpha$.
 
-LightResp_type 1: using rectangular hyperbola equation and fitting the alpha.
+LightResp_type 1: using the same equation with type 0 and fitting $\alpha$.
 
-LightResp_type 2: using non-rectangular hyperbola equation and fitting the alpha and theta.
+LightResp_type 2: using equation $J = \frac{\alpha Q + J_{max} - \sqrt{(\alpha Q + J_{max})^2 - 4 \theta \alpha Q J_{max}}}{2 \theta}$ and fitting $\alpha$ and $\theta$.
 
 TempResp_type 0: Vcmax, Jmax, TPU, and Rd are equal to the Vcmax25, Jmax25, TPU25, and Rd25, respectively.
 
-TempResp_type 1: using Arrhenius equation and fitting the dHa for Vcmax, Jmax, and TPU.
+TempResp_type 1: using equation $k = k_{25} \exp{\left[\frac{\Delta{H_a}}{R}\left(\frac{1}{298}-\frac{1}{T_{leaf}}\right)\right]}$ and fitting $\Delta{H_a}$ for Vcmax, Jmax, and TPU.
 
-TempResp_type 2: using peaked equation and fitting the dHa, Topt for Vcmax, Jmax, and TPU.
+TempResp_type 2: using equation $k = k_{25} \exp\left[\frac{\Delta H_a}{R} \left(\frac{1}{298}-\frac{1}{T_{leaf}}\right)\right]  \frac{f\left(298\right)}{f\left(T_{leaf}\right)}$, where $    f(T) = 1+\exp \left[\frac{\Delta H_d}{R}\left(\frac{1}{T_{opt}}-\frac{1}{T} \right)-\ln \left(\frac{\Delta H_d}{\Delta H_a}-1 \right) \right]$, and fitting $\Delta{H_a}$ and $T_{opt}$ for Vcmax, Jmax, and TPU.
 
 ```bash
 # initialize the model
