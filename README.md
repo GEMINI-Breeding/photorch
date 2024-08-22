@@ -1,7 +1,7 @@
 # PhoTorch
 
 PhoTorch is a robust and generalized photosynthesis biochemical model fitting package based on PyTorch.
-
+Read more about PhoTorch in our paper: https://baileylab.ucdavis.edu/publications/Lei_etal_PhoTorch.pdf
 ## Installation of dependencies
 ```bash
 pip install torch
