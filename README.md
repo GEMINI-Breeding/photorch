@@ -105,6 +105,7 @@ id_index = 0
 id = lcd.IDs[id_index]
 indices_id = lcd.getIndicesbyID(id)
 A_id = A[indices_id]
+Ac_id = Ac[indices_id]
 ```
 ### Get the (preprocessed) photosynthesis data by ID
 ```bash
