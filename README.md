@@ -120,6 +120,7 @@ import fitstomat
 ### Initialize stomatal conductance models
 Four stomatal conductance models are available: Ball Woodrow Berry (BWB), Ball Berry Leuning (BBL), Medlyn (MED), and Buckley Mott Farquhar (BMF).
 More details about these four models can be found at: https://baileylab.ucdavis.edu/software/helios/_stomatal_doc.html.
+
 Abbriviations: A = photosynthesis rate, rh = relative humidity, Q = PAR, VPD = vapor pressure deficit, Gamma = CO2 compensation point.
 ```bash
 # scm = fitstomat.stomat.BWB(A, rh)
