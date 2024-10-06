@@ -43,7 +43,7 @@ def getACi(fvcbmtt, gsw, learnrate = 2, maxiteration = 8000, minloss = 1e-10):
     return gsmtest
 
 
-def run(scm,gsw, learnrate = 0.01, maxiteration = 8000, minloss = 1e-6):
+def run(scm, gsw, learnrate = 0.01, maxiteration = 8000, minloss = 1e-6):
     optimizer = torch.optim.Adam(scm.parameters(), lr=learnrate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.9)
     best_loss = 100000

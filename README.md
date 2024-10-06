@@ -110,7 +110,6 @@ A_id = A[indices_id]
 ```bash
 A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[id_index])
 ```
-
 <hr style="border: 2px solid black;">
 
 ## Stomatal conductance model usage

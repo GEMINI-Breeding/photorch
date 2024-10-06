@@ -124,5 +124,5 @@ class lossSC(nn.Module):
         loss = self.mse(gs_fit, gs_true)
         # get all learnable parameters in scm
         for param in scm.parameters():
-            loss += torch.sum(torch.relu(-param))*100
+            loss += torch.sum(torch.relu(-param))*10
         return loss
