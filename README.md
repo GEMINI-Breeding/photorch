@@ -121,7 +121,7 @@ import fitstomat
 Four stomatal conductance models are available: Ball Woodrow Berry (BWB), Ball Berry Leuning (BBL), Medlyn (MED), and Buckley Mott Farquhar (BMF).
 More details about these four models can be found at: https://baileylab.ucdavis.edu/software/helios/_stomatal_doc.html.
 
-Abbriviations: rh = relative humidity VPD = vapor pressure deficit, Gamma = CO2 compensation point.
+All input variables should be torch vector (1-D tensor) of the same length for the model. Abbriviations: rh = relative humidity VPD = vapor pressure deficit, Gamma = CO2 compensation point.
 ```bash
 # scm = fitstomat.stomat.BWB(A, rh)
 scm = fitstomat.stomat.BMF(Qin, VPD)
@@ -130,7 +130,7 @@ scm = fitstomat.stomat.BMF(Qin, VPD)
 ```
 ### Fit the parameters of target stomatal conductance model
 ```bash
-scm = fitstomat.run(scm, gsw, learnrate = 0.01, maxiteration = 8000) # gsw is the stomatal conductance data
+scm = fitstomat.run(scm, gsw, learnrate = 0.01, maxiteration = 8000) # gsw is the stomatal conductance data (same length as above variables).
 scm.Em # the fitted parameter of BMF model
 scm.i0 # the fitted parameter of BMF model
 scm.k # the fitted parameter of BMF model
