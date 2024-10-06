@@ -84,7 +84,7 @@ The main parameters are stored in the 'fvbm'. The temperature response parameter
 id_index = 0
 id = int(lcd.IDs[id_index]) # target curve ID
 fg_index =  int(lcd.FGs[id_index]) # index of the corresponding fitting group
-if fvcbm.onefit:
+if not fvcbm.onefit:
     Vcmax25_id = fvcbm.Vcmax25[id_index]
     Jmax25_id = fvcbm.Jmax25[id_index]
 else:
@@ -121,7 +121,7 @@ import fitstomat
 Four stomatal conductance models are available: Ball Woodrow Berry (BWB), Ball Berry Leuning (BBL), Medlyn (MED), and Buckley Mott Farquhar (BMF).
 More details about these four models can be found at: https://baileylab.ucdavis.edu/software/helios/_stomatal_doc.html.
 
-All input variables should be torch vector (1-D tensor) of the same length for the model. Abbriviations: rh = relative humidity VPD = vapor pressure deficit, Gamma = CO2 compensation point.
+All input variables should be torch vector (1-D tensor) of the same length for the model. Abbriviations: rh = relative humidity, VPD = vapor pressure deficit, Gamma = CO2 compensation point.
 ```bash
 # scm = fitstomat.stomat.BWB(A, rh)
 scm = fitstomat.stomat.BMF(Qin, VPD)
