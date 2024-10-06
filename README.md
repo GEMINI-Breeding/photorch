@@ -9,7 +9,7 @@ pip install numpy
 pip install scipy
 pip install pandas
 ```
-## Usage
+## FvCB model usage
 After installing the dependencies, download the package and import it into your Python script.
 
 ```bash
@@ -37,7 +37,7 @@ The data to be loaded should be:
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
 # initialize the data, and preprocess the data
 # specify the list of light response curve IDs, if no light response curve, input "lightresp_id = None"
-lcd = fitACi.initD.initLicordata(dftest, preprocess=True, lightresp_id = [118])
+lcd = fitaci.initD.initLicordata(dftest, preprocess=True, lightresp_id = [118])
 ```
 ### Define the device
 'cuda' means an NVIDIA GPU will be used. If you want to use the CPU, set 'device_fit' to 'cpu'.
@@ -65,17 +65,17 @@ TempResp_type 2: using equation $k = k_{25} \exp\left[\frac{\Delta H_a}{R} \left
 
 ```bash
 # initialize the model
-fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False)
+fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False)
 ```
 ### (Alternatively) Specify default fixed or learnable parameters, and set whether to fit Kc25, Ko25, gamma25, and gm (all defaults are False)
 ```bash
-allparamas = fitACi.initM.allparameters()
+allparamas = fitaci.initM.allparameters()
 allparamas.dHa_Vcmax = torch.tensor(40.0)
-fvcbm = fitACi.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitgm= False, fitgamma=True, fitKo=False, fitKc=True, allparams=allparamas)
+fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitgm= False, fitgamma=True, fitKo=False, fitKc=True, allparams=allparamas)
 ```
 ### Fit A/Ci curves
 ```bash
-fitresult = fitACi.run(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 20000, minloss= 1, recordweightsTF=False)
+fitresult = fitaci.run(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 20000, minloss= 1, recordweightsTF=False)
 fvcbm = fitresult.model
 ```
 ### Get fitted parameters by ID
@@ -110,3 +110,30 @@ A_id = A[indices_id]
 ```bash
 A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[id_index])
 ```
+
+<hr style="border: 2px solid black;">
+
+## Stomatal conductance model usage
+The stomatal conductance model is under development.
+```bash
+import fitstomat
+```
+### Initialize stomatal conductance models
+Four stomatal conductance models are available: Ball Woodrow Berry (BWB), Ball Berry Leuning (BBL), Medlyn (MED), and Buckley Mott Farquhar (BMF).
+More details about these four models can be found at: https://baileylab.ucdavis.edu/software/helios/_stomatal_doc.html.
+Abbriviations: A = photosynthesis rate, rh = relative humidity, Q = PAR, VPD = vapor pressure deficit, Gamma = CO2 compensation point.
+```bash
+# scm = fitstomat.stomat.BWB(A, rh)
+scm = fitstomat.stomat.BMF(Q, VPD)
+# scm = fitstomat.stomat.MED(A, VPD)
+# scm = fitstomat.stomat.BBL(A, Gamma,VPD)
+```
+### Fit the parameters of target stomatal conductance model
+```bash
+scm = fitstomat.run(scm, gsw, learnrate = 0.01, maxiteration = 8000) # gsw is the stomatal conductance data
+scm.Em # the fitted parameter of BMF model
+scm.i0 # the fitted parameter of BMF model
+scm.k # the fitted parameter of BMF model
+scm.b # the fitted parameter of BMF model
+```
+
