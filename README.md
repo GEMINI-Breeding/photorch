@@ -9,7 +9,7 @@ pip install numpy
 pip install scipy
 pip install pandas
 ```
-## FvCB model usage
+## 1. FvCB model usage
 After installing the dependencies, download the package and import it into your Python script.
 
 ```bash
@@ -110,9 +110,9 @@ A_id = A[indices_id]
 ```bash
 A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[id_index])
 ```
-<hr style="border: 2px solid black;">
+***
 
-## Stomatal conductance model usage
+## 2. Stomatal conductance model usage
 The stomatal conductance model is under development.
 ```bash
 import fitstomat
