@@ -80,9 +80,13 @@ class initLicordata():
         IDs = np.unique(all_IDs)
 
         fgname = 'FittingGroup'
-        all_FGs = LCdata[fgname].values
-        FGs_uq = np.unique(all_FGs)
-        self.num_FGs = len(FGs_uq)
+        try:
+            all_FGs = LCdata[fgname].values
+            FGs_uq = np.unique(all_FGs)
+            self.num_FGs = len(FGs_uq)
+        except:
+            print('Warning: FittingGroup not found, using default value 0')
+            self.num_FGs = 1
 
         self.IDs = np.array([])
         self.FGs = np.array([])
