@@ -28,7 +28,7 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, 
 
     criterion = initM.Loss(fvcbm.lcd, ApCithreshold, fitcorr)
     optimizer = torch.optim.Adam(fvcbm.parameters(), lr=learn_rate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5000, gamma=0.8)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size= 5000, gamma=0.8)
 
     best_loss = 100000
 
