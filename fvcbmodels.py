@@ -608,8 +608,11 @@ class Loss(nn.Module):
         penalty_inter = penalty_inter + 3 * torch.sum(torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0))
 
         # penalty to make sure part of Aj_o_i is larger than Ac_o_i
-        penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Aj, min=0))
+        if fvc_model.fitRd:
+            penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Aj, min=0))
         # penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Ac, min=0))
+        else:
+            penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Aj, min=0)) * 5
 
         loss = loss + penalty_inter
         return loss

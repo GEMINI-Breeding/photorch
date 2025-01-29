@@ -1,7 +1,8 @@
 # PhoTorch
 
 PhoTorch is a robust and generalized photosynthesis biochemical model fitting package based on PyTorch.
-Read more about PhoTorch in our paper: https://baileylab.ucdavis.edu/publications/Lei_etal_PhoTorch.pdf
+Read more about PhoTorch in our paper: https://arxiv.org/abs/2501.15484.
+Currently, the package includes the Farquhar, von Caemmerer, and Berry (FvCB) model. The series of stomatal conductance models and the PROSPECT-X model are under development.
 ## Installation of dependencies
 ```bash
 pip install torch
@@ -137,4 +138,8 @@ scm.i0 # the fitted parameter of BMF model
 scm.k # the fitted parameter of BMF model
 scm.b # the fitted parameter of BMF model
 ```
-
+## 3. PROSPECT-X model usage
+The PROSPECT-X model is under development.
+```bash
+import prospectmodels
+```
