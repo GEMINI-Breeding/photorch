@@ -16,7 +16,7 @@ class modelresult():
         self.losses = loss_all
         self.recordweights = allweights
 
-def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 8000, minloss = 3, recordweightsTF = False, fitcorr = False, ApCithreshold = 500):
+def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000, minloss = 3, recordweightsTF = False, fitcorr = False, ApCithreshold = 500):
     start_time = time.time()
 
     if device == 'cuda':

@@ -20,6 +20,7 @@ class allparameters(nn.Module):
         self.Ko25 = torch.tensor(278.4)
         self.Gamma25 = torch.tensor(42.75)
         self.alphaG_r = torch.tensor(-8.0)
+        self.alphaG = torch.sigmoid(self.alphaG_r)
         self.gm = torch.tensor(100.0)
 
         self.alpha = torch.tensor(0.5)
@@ -287,7 +288,7 @@ class TemperatureResponse(nn.Module):
             param.requires_grad = fitting
 
 class FvCB(nn.Module):
-    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, fitag: bool = False, fitRd: bool = False, allparams =  allparameters()):
+    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, fitag: bool = False, fitRd: bool = True, allparams =  allparameters()):
         super(FvCB, self).__init__()
         self.lcd = lcd
         self.allparams = allparams
@@ -300,7 +301,7 @@ class FvCB(nn.Module):
             self.__alphaG_r = nn.Parameter(torch.ones(self.lcd.num_FGs) * self.allparams.alphaG_r)
             self.alphaG = None
         else:
-            self.alphaG = torch.sigmoid(self.allparams.alphaG_r)
+            self.alphaG = self.allparams.alphaG
 
         self.onefit = onefit
         if onefit:
@@ -314,7 +315,7 @@ class FvCB(nn.Module):
         if self.fitRd:
             self.Rd25 = nn.Parameter(torch.ones(self.curvenum) * self.allparams.Rd25)
         else:
-            self.Rd25 = torch.ones(self.curvenum) * self.allparams.Vcmax25 * 0.015
+            self.Rd25 = torch.ones(self.curvenum) * self.allparams.Vcmax25 * 0.01
 
         self.Vcmax = None
         self.Jmax = None
@@ -370,14 +371,17 @@ class FvCB(nn.Module):
         return vcmax, jmax, tpu, rd
 
     def forward(self):
-        if not self.fitRd:
-            self.Rd25 = self.Vcmax25 * 0.015
+        # if not self.fitRd:
+        #     self.Rd25 = self.Vcmax25 * 0.01
         vcmax25, jmax25, tpu25, rd25 = self.expandparam(self.Vcmax25, self.Jmax25, self.TPU25, self.Rd25)
 
         self.Vcmax = self.TempResponse.getVcmax(vcmax25)
         self.Jmax = self.TempResponse.getJmax(jmax25)
         self.TPU = self.TempResponse.getTPU(tpu25)
-        self.Rd = self.TempResponse.getRd(rd25)
+        if not self.fitRd:
+            self.Rd = self.Vcmax * 0.01
+        else:
+            self.Rd = self.TempResponse.getRd(rd25)
 
         if self.fitag:
             self.alphaG = torch.sigmoid(self.__alphaG_r)
@@ -485,8 +489,10 @@ class Loss(nn.Module):
         if fvc_model.fitRd:
             if fvc_model.curvenum > 1:
                 loss += torch.sum(self.relu(-fvc_model.Rd25))
+                # loss += self.mse(fvc_model.Rd25, fvc_model.Vcmax25 * 0.01)
             else:
                 loss += self.relu(-fvc_model.Rd25)[0]
+                # loss += self.mse(fvc_model.Rd25, fvc_model.Vcmax25 * 0.01)
         else:
             # make sure Vcmax25 is larger than 0
             if fvc_model.curvenum > 1:
@@ -494,6 +500,11 @@ class Loss(nn.Module):
             else:
                 loss += self.relu(-fvc_model.Vcmax25)[0]
 
+        if fvc_model.fitag:
+            if self.num_FGs > 1:
+                loss += torch.sum(self.relu(fvc_model.alphaG)) * 5
+            elif self.num_FGs == 1:
+                loss += self.relu(fvc_model.alphaG)[0] * 5
 
         if fvc_model.TempResponse.type != 0:
             if self.num_FGs > 1:
@@ -561,6 +572,9 @@ class Loss(nn.Module):
         Acj_o_diff = self.relu(Acj_o_diff)
         Ajc_o_diff = self.relu(Ajc_o_diff)
 
+        indices_closest = torch.tensor([]).long()
+        ls_Aj = torch.tensor([]).float()
+        # ls_Ac = torch.tensor([]).float()
         for i in range(fvc_model.curvenum):
 
             index_start = self.indices_start[i]
@@ -568,26 +582,34 @@ class Loss(nn.Module):
 
             # get the index that Ac closest to Aj
             index_closest = torch.argmin(Acj_o_diff_abs[index_start:index_end])
-            Aj_inter = Aj_o[index_start+index_closest]
-            Ap_inter = Ap_o[index_start+index_closest]
+            indices_closest = torch.cat((indices_closest, index_closest.unsqueeze(0)), dim=0)
 
             # startdiff = Acj_o_diff_abs[index_start]
             # interdiff = Acj_o_diff_abs[index_start+index_closest]
             # # penalty that interdiff not larger than startdiff
             # penalty_inter = penalty_inter + torch.clamp(startdiff - interdiff + 2, min=0)
 
-            # penalty that Ap is less than the intersection of Ac and Aj
-            penalty_inter = penalty_inter + 3 * torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0)
-
             if self.mask_lightresp[i]:
                 continue
 
             # penalty to make sure part of Aj_o_i is larger than Ac_o_i
             ls_Aj_i = torch.sum(Ajc_o_diff[index_start:index_end])
-            penalty_inter = penalty_inter + torch.clamp(5 - ls_Aj_i, min=0)
+            # penalty_inter = penalty_inter + torch.clamp(5 - ls_Aj_i, min=0)
+            ls_Aj = torch.cat((ls_Aj, ls_Aj_i.unsqueeze(0)))
+            
+            # ls_Ac_i = torch.sum(Acj_o_diff[index_start:index_end])
+            # penalty_inter = penalty_inter + torch.clamp(5 - ls_Ac_i, min=0)
+            # ls_Ac = torch.cat((ls_Ac, ls_Ac_i.unsqueeze(0)))
+            
+        Aj_inter = Aj_o[self.indices_start + indices_closest]
+        Ap_inter = Ap_o[self.indices_start + indices_closest]
+        
+        # penalty that Ap is less than the intersection of Ac and Aj
+        penalty_inter = penalty_inter + 3 * torch.sum(torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0))
 
-            ls_Ac_i = torch.sum(Acj_o_diff[index_start:index_end])
-            penalty_inter = penalty_inter + torch.clamp(5 - ls_Ac_i, min=0)
+        # penalty to make sure part of Aj_o_i is larger than Ac_o_i
+        penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Aj, min=0))
+        # penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Ac, min=0))
 
         loss = loss + penalty_inter
         return loss

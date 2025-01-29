@@ -17,6 +17,7 @@ def remove_ud_trend(A, Ci, up_treshold = 0.06, down_treshold = 0.06, keepCi = 10
             continue
         else:
             break
+
     # If an upward trend is found, remove the upward segment
     if upward_trend_start is not None:
         indices = indices[:upward_trend_start + 1]

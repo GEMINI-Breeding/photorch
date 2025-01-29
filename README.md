@@ -69,9 +69,9 @@ fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = F
 ```
 ### (Alternatively) Specify default fixed or learnable parameters, and set whether to fit Kc25, Ko25, gamma25, and gm (all defaults are False)
 ```bash
-allparamas = fitaci.initM.allparameters()
-allparamas.dHa_Vcmax = torch.tensor(40.0)
-fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitgm= False, fitgamma=True, fitKo=False, fitKc=True, allparams=allparamas)
+allparams = fitaci.initM.allparameters()
+allparams.dHa_Vcmax = torch.tensor(40.0)
+fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitgm= False, fitgamma=True, fitKo=False, fitKc=True, allparams=allparams)
 ```
 ### Fit A/Ci curves
 ```bash
