@@ -54,7 +54,7 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000,
         optimizer.zero_grad()
 
         An_o, Ac_o, Aj_o, Ap_o = fvcbm()
-        loss = criterion(fvcbm, An_o, Ac_o, Aj_o, Ap_o)
+        loss = criterion(fvcbm, An_o, Ac_o, Aj_o, Ap_o,iter)
 
         loss.backward()
         if (iter + 1) % 200 == 0:
