@@ -89,7 +89,7 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000,
 
     return modelresult_out
 
-def getVadlidTPU(fvcbm:initM.FvCB, threshold_jp: float = 0.5):
+def getVadlidAp(fvcbm:initM.FvCB, threshold_jp: float = 0.5):
 
     A, Ac, Aj, Ap = fvcbm()
     IDs = fvcbm.lcd.IDs
@@ -105,5 +105,51 @@ def getVadlidTPU(fvcbm:initM.FvCB, threshold_jp: float = 0.5):
 
     A_new =  torch.min(torch.stack((Ac, Aj, Ap)), dim=0).values
     return A_new, mask_vali
+
+def getValidVcmax(fvcbm: initM.FvCB):
+    fvcbm.eval()
+    A, Ac, Aj, Ap = fvcbm()
+    IDs = fvcbm.lcd.IDs
+
+    mask_vcmax = torch.tensor([True]*len(IDs))
+    for i in range(len(IDs)):
+        indices = fvcbm.lcd.getIndicesbyID(IDs[i])
+        A_ri = fvcbm.lcd.A[indices]
+        Ac_i = Ac[indices]
+        Aj_i = Aj[indices]
+        # get the first 5 % of the data
+        index_10 = int(len(A_ri) * 0.05)
+        if index_10 < 2:
+            index_10 = [1]
+        rmse_c = get_rmse_loss(A_ri[:index_10], Ac_i[:index_10])
+        rmse_j = get_rmse_loss(A_ri[:index_10], Aj_i[:index_10])
+        if rmse_c >= rmse_j:
+            mask_vcmax[i] = False
+
+    return mask_vcmax
+
+def getValidTPU(fvcbm: initM.FvCB):
+    fvcbm.eval()
+    A, Ac, Aj, Ap = fvcbm()
+    IDs = fvcbm.lcd.IDs
+
+    mask_tpu = torch.tensor([True]*len(IDs))
+    for i in range(len(IDs)):
+        indices = fvcbm.lcd.getIndicesbyID(IDs[i])
+        A_ri = fvcbm.lcd.A[indices]
+        Aj_i = Aj[indices]
+        Ap_i = Ap[indices]
+        # get the last 5 % of the data
+        index_10 = int(len(A_ri) * 0.05)
+        if index_10 < 2:
+            index_10 = [1]
+        rmse_p = get_rmse_loss(A_ri[-index_10:], Ap_i[-index_10:])
+        rmse_j = get_rmse_loss(A_ri[-index_10:], Aj_i[-index_10:])
+
+        if rmse_p >= rmse_j:
+            mask_tpu[i] = False
+
+    return mask_tpu
+
 
 
