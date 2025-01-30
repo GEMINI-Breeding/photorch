@@ -11,6 +11,8 @@ class allparameters(nn.Module):
         self.kelvin = torch.tensor(273.15)
         self.Troom = torch.tensor(25.0) + self.kelvin
         self.oxy = torch.tensor(213.5)
+        self.Rdratio_r = torch.tensor(0)
+        self.Rdratio = torch.tensor(0.015)
 
         self.Vcmax25 = torch.tensor(100.0)
         self.Jmax25 = torch.tensor(200.0)
@@ -22,6 +24,8 @@ class allparameters(nn.Module):
         self.alphaG_r = torch.tensor(-8.0)
         self.alphaG = torch.sigmoid(self.alphaG_r)
         self.gm = torch.tensor(100.0)
+        self.Rdratio_r = torch.tensor(0)
+        self.Rdratio = torch.tensor(0.015)
 
         self.alpha = torch.tensor(0.5)
         self.theta = torch.tensor(0.7)
@@ -288,7 +292,7 @@ class TemperatureResponse(nn.Module):
             param.requires_grad = fitting
 
 class FvCB(nn.Module):
-    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, fitag: bool = False, fitRd: bool = True, allparams =  allparameters()):
+    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, fitag: bool = False, fitRd: bool = True, fitRdratio: bool = False, allparams =  allparameters()):
         super(FvCB, self).__init__()
         self.lcd = lcd
         self.allparams = allparams
@@ -312,10 +316,18 @@ class FvCB(nn.Module):
         self.Jmax25 = nn.Parameter(torch.ones(self.curvenum) * self.allparams.Jmax25)
         self.TPU25 = nn.Parameter(torch.ones(self.curvenum) * self.allparams.TPU25)
         self.fitRd = fitRd
+        self.fitRdratio = fitRdratio
         if self.fitRd:
             self.Rd25 = nn.Parameter(torch.ones(self.curvenum) * self.allparams.Rd25)
         else:
-            self.Rd25 = torch.ones(self.curvenum) * self.allparams.Vcmax25 * 0.01
+            if fitRdratio:
+                self.__Rdratio = nn.Parameter(torch.ones(self.lcd.num_FGs)*self.allparams.Rdratio_r)
+                self.Rdratio = None
+            else:
+                self.Rdratio = torch.ones(1) * self.allparams.Rdratio
+                self.Rdratio = self.Rdratio.to(self.lcd.device)
+            self.Rd25 = torch.ones(self.curvenum) * self.allparams.Vcmax25 * self.allparams.Rdratio
+            self.Rd25 = self.Rd25.to(self.lcd.device)
 
         self.Vcmax = None
         self.Jmax = None
@@ -371,15 +383,20 @@ class FvCB(nn.Module):
         return vcmax, jmax, tpu, rd
 
     def forward(self):
-        # if not self.fitRd:
-        #     self.Rd25 = self.Vcmax25 * 0.01
+
         vcmax25, jmax25, tpu25, rd25 = self.expandparam(self.Vcmax25, self.Jmax25, self.TPU25, self.Rd25)
 
         self.Vcmax = self.TempResponse.getVcmax(vcmax25)
         self.Jmax = self.TempResponse.getJmax(jmax25)
         self.TPU = self.TempResponse.getTPU(tpu25)
         if not self.fitRd:
-            self.Rd = self.Vcmax * 0.01
+            if self.fitRdratio:
+                self.Rdratio = torch.sigmoid(self.__Rdratio) * 0.02 + 0.01
+                if self.lcd.num_FGs > 1:
+                    self.Rdratio = torch.repeat_interleave(self.Rdratio[self.lcd.FGs_idx], self.lcd.lengths, dim=0)
+                self.Rd = self.Vcmax * self.Rdratio
+            else:
+                self.Rd = self.Vcmax * self.Rdratio
         else:
             self.Rd = self.TempResponse.getRd(rd25)
 
@@ -387,6 +404,7 @@ class FvCB(nn.Module):
             self.alphaG = torch.sigmoid(self.__alphaG_r)
             if self.lcd.num_FGs > 1:
                 self.alphaG = torch.repeat_interleave(self.alphaG[self.lcd.FGs_idx], self.lcd.lengths, dim=0)
+
 
         if self.fitgm:
             gm = torch.clamp(self.gm, min=0.0001)
@@ -501,6 +519,12 @@ class Loss(nn.Module):
             else:
                 loss += self.relu(-fvc_model.Vcmax25)[0]
 
+        if fvc_model.fitag:
+            if self.num_FGs > 1:
+                loss += torch.sum(self.relu(fvc_model.alphaG)) * 5
+            elif self.num_FGs == 1:
+                loss += self.relu(fvc_model.alphaG)[0] * 5
+
         if fvc_model.TempResponse.type != 0:
             if self.num_FGs > 1:
                 loss += torch.sum(self.relu(-fvc_model.TempResponse.dHa_Vcmax)) * 10
@@ -540,7 +564,7 @@ class Loss(nn.Module):
         loss += torch.sum(self.relu(-Ap_o))
 
         # penalty that last Aj is larger than Ac
-        penalty_jc = torch.clamp(Aj_o[self.end_indices] - Ac_o[self.end_indices], min=0)
+        penalty_jc = torch.clamp(Aj_o[self.end_indices] - Ac_o[self.end_indices] + 3, min=0)
         loss += torch.sum(penalty_jc)
 
         Acj_o_diff = Ac_o - Aj_o
@@ -552,8 +576,8 @@ class Loss(nn.Module):
         # Acj_o_diff = self.relu(Acj_o_diff)
         Ajc_o_diff = self.relu(Ajc_o_diff)
 
-        indices_closest = torch.tensor([]).long()
-        ls_Aj = torch.tensor([]).float()
+        indices_closest = torch.tensor([]).long().to(Aj_o.device)
+        ls_Aj = torch.tensor([]).float().to(Aj_o.device)
         # ls_Ac = torch.tensor([]).float()
         for i in range(fvc_model.curvenum):
 
@@ -600,35 +624,23 @@ class Loss(nn.Module):
             if len(self.mask_fitAp) > 0:
                 Ap_jc_diff = Ap_o[self.end_indices] - Aj_o[self.end_indices]
                 penalty_pj = torch.clamp(Ap_jc_diff[self.mask_fitAp], min=0)
-                loss += torch.sum(penalty_pj)
+                penalty_inter += torch.sum(penalty_pj)
 
             # if len(~self.mask_fitAp) > 0:
             #     Ajc_p_diff = 1.5 * Aj_o[self.end_indices] - Ap_o[self.end_indices]
             #     penalty_jp = torch.clamp(Ajc_p_diff[~self.mask_fitAp], min=0)
-            #     loss += torch.sum(penalty_jp)
-
-            if fvc_model.fitag:
-                if self.num_FGs > 1:
-                    loss += torch.sum(self.relu(fvc_model.alphaG)) * 5
-                elif self.num_FGs == 1:
-                    loss += self.relu(fvc_model.alphaG)[0] * 5
+            #     penalty_inter += torch.sum(penalty_jp)
 
         else:
             ## penalty that first Ac is larger than Aj
             penalty_cj = torch.clamp(Ac_o[self.indices_start] - Aj_o[self.indices_start]+2, min=0)
-            loss += torch.sum(penalty_cj)
+            penalty_inter += torch.sum(penalty_cj)
             # penalty_inter = penalty_inter + torch.sum(torch.clamp(5 - ls_Aj, min=0))
 
             if len(self.mask_fitAp) > 0:
                 Ap_jc_diff = Ap_o[self.end_indices] - Aj_o[self.end_indices]
                 penalty_pj = torch.clamp(Ap_jc_diff[self.mask_fitAp], min=0)
-                loss += torch.sum(penalty_pj) * 0.01
-
-            if fvc_model.fitag:
-                if self.num_FGs > 1:
-                    loss += torch.sum(self.relu(fvc_model.alphaG))
-                elif self.num_FGs == 1:
-                    loss += self.relu(fvc_model.alphaG)[0]
+                penalty_inter += torch.sum(penalty_pj) * 0.15
 
 
         loss = loss + penalty_inter
