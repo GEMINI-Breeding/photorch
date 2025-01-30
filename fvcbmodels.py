@@ -569,7 +569,7 @@ class Loss(nn.Module):
         penalty_inter = torch.tensor(0.0)
 
         Acj_o_diff_abs = torch.abs(Acj_o_diff)
-        Acj_o_diff = self.relu(Acj_o_diff)
+        # Acj_o_diff = self.relu(Acj_o_diff)
         Ajc_o_diff = self.relu(Ajc_o_diff)
 
         indices_closest = torch.tensor([]).long()
@@ -612,7 +612,7 @@ class Loss(nn.Module):
             penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Aj, min=0))
         # penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Ac, min=0))
         else:
-            penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Aj, min=0)) * 5
+            penalty_inter = penalty_inter + torch.sum(torch.clamp(8 - ls_Aj, min=0)) * 10
 
         loss = loss + penalty_inter
         return loss

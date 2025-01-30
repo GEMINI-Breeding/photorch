@@ -88,7 +88,7 @@ class initLicordata():
             raise ValueError('FittingGroup not found in the data')
 
         self.IDs = np.array([])
-        self.FGs = np.array([])
+        self.FGs_idx = np.array([])
         self.FGs_name = np.array([])
 
         self.A = torch.empty((0,))  # net photosynthesis
@@ -131,7 +131,7 @@ class initLicordata():
             self.FGs_name = np.append(self.FGs_name, fg)
             # # get the idex of the fg in FGs_uq
             # fg_idx = np.where(FGs_uq == fg)[0][0]
-            # self.FGs = np.append(self.FGs, fg_idx)
+            # self.FGs_idx = np.append(self.FGs_idx, fg_idx)
 
             if lightresp_id is not None and id in lightresp_id:
                 self.mask_lightresp = torch.cat((self.mask_lightresp, torch.tensor([True])))
@@ -171,10 +171,7 @@ class initLicordata():
          # get the idex of the FGs_name in FGs_uq
         for fg in self.FGs_name:
             fg_idx = np.where(FGs_uq == fg)[0][0]
-            self.FGs = np.append(self.FGs, fg_idx)
-
-            # fg_idx = np.where(FGs_uq == fg)[0][0]
-            # self.FGs = np.append(self.FGs, fg_idx)
+            self.FGs_idx = np.append(self.FGs_idx, fg_idx)
 
         self.num_FGs = len(FGs_uq)
         self.indices = sample_indices
@@ -221,7 +218,8 @@ class initLicordata():
 
     def getFitGroupbyID(self, ID):
         try:
-            fg = self.FGs[np.where(self.IDs == ID)[0][0]]
+            fg_idx = self.FGs_idx[np.where(self.IDs == ID)[0][0]]
+            fg_name = self.FGs_name[np.where(self.IDs == ID)[0][0]]
         except:
             raise ValueError('ID', ID, 'not found')
-        return fg
+        return fg_name, fg_idx

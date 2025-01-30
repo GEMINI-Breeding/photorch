@@ -68,11 +68,11 @@ TempResp_type 2: using equation $k = k_{25} \exp\left[\frac{\Delta H_a}{R} \left
 # initialize the model
 fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False)
 ```
-### (Alternatively) Specify default fixed or learnable parameters, and set whether to fit Kc25, Ko25, gamma25, and gm (all defaults are False)
+### (Alternatively) Specify default fixed or learnable parameters, and set whether to fit alphag, Kc25, Ko25, gamma25, and gm (all defaults are False).
 ```bash
 allparams = fitaci.initM.allparameters()
 allparams.dHa_Vcmax = torch.tensor(40.0)
-fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitgm= False, fitgamma=True, fitKo=False, fitKc=True, allparams=allparams)
+fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, fitRd = True, onefit = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
 ```
 ### Fit A/Ci curves
 ```bash
@@ -84,7 +84,7 @@ The main parameters are stored in the 'fvbm'. The temperature response parameter
 ```bash
 id_index = 0
 id = int(lcd.IDs[id_index]) # target curve ID
-fg_index =  int(lcd.FGs[id_index]) # index of the corresponding fitting group
+fg_index =  int(lcd.FGs_idx[id_index]) # index of the corresponding fitting group
 if not fvcbm.onefit:
     Vcmax25_id = fvcbm.Vcmax25[id_index]
     Jmax25_id = fvcbm.Jmax25[id_index]
