@@ -569,7 +569,7 @@ class Loss(nn.Module):
             # # penalty that interdiff not larger than startdiff
             # penalty_inter = penalty_inter + torch.clamp(startdiff - interdiff + 2, min=0)
 
-            if self.mask_lightresp[i]:
+            if self.mask_lightresp[i] or self.weakconstiter < iter:
                 continue
 
             # penalty to make sure part of Aj_o_i is larger than Ac_o_i
@@ -615,9 +615,9 @@ class Loss(nn.Module):
 
         else:
             ## penalty that first Ac is larger than Aj
-            # penalty_cj = torch.clamp(Ac_o[self.indices_start] - Aj_o[self.indices_start], min=0)
-            # loss += torch.sum(penalty_cj)
-            penalty_inter = penalty_inter + torch.sum(torch.clamp(5 - ls_Aj, min=0))
+            penalty_cj = torch.clamp(Ac_o[self.indices_start] - Aj_o[self.indices_start]+2, min=0)
+            loss += torch.sum(penalty_cj)
+            # penalty_inter = penalty_inter + torch.sum(torch.clamp(5 - ls_Aj, min=0))
 
             if len(self.mask_fitAp) > 0:
                 Ap_jc_diff = Ap_o[self.end_indices] - Aj_o[self.end_indices]
