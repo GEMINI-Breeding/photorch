@@ -493,6 +493,7 @@ class Loss(nn.Module):
         self.fitCorrelation = fitCorrelation
         self.weakconstiter = weakconstiter
         self.Ci = lcd.Ci
+        self.mask_Ci450 = (lcd.Ci > 450) & (lcd.Ci < 500)
 
     def forward(self, fvc_model, An_o, Ac_o, Aj_o, Ap_o,iter):
 
@@ -562,8 +563,8 @@ class Loss(nn.Module):
         # penalty that Ap less than 0
         loss += torch.sum(self.relu(-Ap_o))
 
-        # penalty that last Aj is larger than Ac
-        penalty_jc = torch.clamp(Aj_o[self.end_indices] - Ac_o[self.end_indices] + 3, min=0)
+        # penalty that Aj is larger than Ac at Ci between 450 and 500
+        penalty_jc = torch.clamp(Aj_o[self.mask_Ci450] - Ac_o[self.mask_Ci450], min=0)
         loss += torch.sum(penalty_jc)
 
         Acj_o_diff = Ac_o - Aj_o
@@ -606,14 +607,12 @@ class Loss(nn.Module):
             
         Aj_inter = Aj_o[self.indices_start + indices_closest]
         Ap_inter = Ap_o[self.indices_start + indices_closest]
-        
-        # penalty that Ap is less than the intersection of Ac and Aj
-        penalty_inter = penalty_inter + 3 * torch.sum(torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0))
-
-        # penalty that Ci of the intersection is larger than 800
-        # penalty_inter = penalty_inter + torch.sum(torch.clamp(self.Ci[self.indices_start + indices_closest]-400, min=0)) * 0.01
 
         if iter <  self.weakconstiter :
+
+            # penalty that Ap is less than the intersection of Ac and Aj
+            penalty_inter = penalty_inter + 3 * torch.sum(torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0))
+
             # penalty to make sure part of Aj_o_i is larger than Ac_o_i
             if fvc_model.fitRd:
                 penalty_inter = penalty_inter + torch.sum(torch.clamp(5 - ls_Aj, min=0))
@@ -635,6 +634,10 @@ class Loss(nn.Module):
                     loss += self.relu(fvc_model.alphaG)[0] * 10
 
         else:
+
+            # penalty that Ap is less than the intersection of Ac and Aj
+            penalty_inter = penalty_inter + torch.sum(torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0))
+
             ## penalty that first Ac is larger than Aj
             if fvc_model.fitRd:
                 penalty_cj = torch.clamp(Ac_o[self.indices_start] - Aj_o[self.indices_start], min=0)
