@@ -493,7 +493,7 @@ class Loss(nn.Module):
         self.fitCorrelation = fitCorrelation
         self.weakconstiter = weakconstiter
         self.Ci = lcd.Ci
-        self.mask_Ci450 = (lcd.Ci > 450) & (lcd.Ci < 500)
+        self.mask_Ci450 = (lcd.Ci > 450) & (lcd.Ci < 600)
 
     def forward(self, fvc_model, An_o, Ac_o, Aj_o, Ap_o,iter):
 
@@ -563,8 +563,8 @@ class Loss(nn.Module):
         # penalty that Ap less than 0
         loss += torch.sum(self.relu(-Ap_o))
 
-        # penalty that Aj is larger than Ac at Ci between 450 and 500
-        penalty_jc = torch.clamp(Aj_o[self.mask_Ci450] - Ac_o[self.mask_Ci450], min=0)
+        # penalty that Aj is larger than Ac at Ci between 450 and 600
+        penalty_jc = torch.clamp(Aj_o[self.mask_Ci450] - Ac_o[self.mask_Ci450], min=0) * 0.1
         loss += torch.sum(penalty_jc)
 
         Acj_o_diff = Ac_o - Aj_o
