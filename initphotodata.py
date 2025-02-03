@@ -2,6 +2,21 @@
 # Licor data initialization
 import torch
 import numpy as np
+from scipy.stats import linregress
+from scipy.signal import savgol_filter
+
+def checkfitTPU(A, Ci, threshold = 0.0065):
+    # fit last 5% of the data using linear regression
+    index_5 = int(len(A) * 0.125)
+    if index_5 < 3:
+        return True
+    else:
+        slope, intercept, r_value, p_value, std_err = linregress(Ci[-index_5:], A[-index_5:])
+        if slope < threshold:
+            return True
+        else:
+            return False
+
 
 def remove_ud_trend(A, Ci, up_treshold = 0.06, down_treshold = 0.06, keepCi = 1000):
     # Calculate the difference between consecutive data points
@@ -35,9 +50,7 @@ def remove_ud_trend(A, Ci, up_treshold = 0.06, down_treshold = 0.06, keepCi = 10
         indices = indices[:downward_trend_start + 1]
     return indices
 
-def preprocessCurve(A, Ci, indices, smoothingwindow = 10, up_treshold=0.06, down_treshold=0.06, lightresp = False):
-
-    from scipy.signal import savgol_filter
+def preprocessCurve(A, Ci, indices, smoothingwindow = 5, up_treshold=0.06, down_treshold=0.06, lightresp = False):
 
     if not lightresp:
         if len(A[Ci > 600]) > smoothingwindow*3:
@@ -108,6 +121,9 @@ class initLicordata():
         # create a boolean mask for curve fitting, initialize all to True with length equal to the number of samples
         self.mask_lightresp = torch.tensor([])
 
+        # create a boolean mask for TPU fitting, initialize all to True with length equal to the number of samples
+        self.mask_fitTPU = torch.tensor([])
+
         for i in range(len(IDs)):
             id = IDs[i]
             indices = np.where(LCdata[idname] == id)[0]
@@ -166,6 +182,8 @@ class initLicordata():
             idx += len(indices)
             sample_lengths = torch.cat((sample_lengths, torch.tensor([len(indices)], dtype=torch.int32)))
 
+            # self.mask_fitTPU = torch.cat((self.mask_fitTPU, torch.tensor([checkfitTPU(A, Ci)])))
+
 
         FGs_uq = np.unique(self.FGs_name)
          # get the idex of the FGs_name in FGs_uq
@@ -177,6 +195,9 @@ class initLicordata():
         self.indices = sample_indices
         self.lengths = sample_lengths
         self.num = len(self.IDs)
+        self.mask_lightresp = self.mask_lightresp.bool()
+        self.mask_nolightresp = ~self.mask_lightresp
+        # self.mask_fitTPU = self.mask_fitTPU.bool() & self.mask_nolightresp
 
         # print done reading data information
         print('Done reading:', self.num, 'A/Ci curves;', len(self.A), 'data points')

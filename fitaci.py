@@ -16,7 +16,7 @@ class modelresult():
         self.losses = loss_all
         self.recordweights = allweights
 
-def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000, minloss = 3, recordweightsTF = False, fitcorr = False, ApCithreshold = 500, weakconstiter = 10000):
+def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000, minloss = 3, recordweightsTF = False, fitcorr = False, ApCithreshold = 600, weakconstiter = 10000):
     start_time = time.time()
 
     if device == 'cuda':
@@ -117,16 +117,40 @@ def getValidVcmax(fvcbm: initM.FvCB):
         A_ri = fvcbm.lcd.A[indices]
         Ac_i = Ac[indices]
         Aj_i = Aj[indices]
-        # get the first 5 % of the data
-        index_10 = int(len(A_ri) * 0.05)
-        if index_10 < 2:
-            index_10 = [1]
-        rmse_c = get_rmse_loss(A_ri[:index_10], Ac_i[:index_10])
-        rmse_j = get_rmse_loss(A_ri[:index_10], Aj_i[:index_10])
-        if rmse_c >= rmse_j:
+        # get the first 3 % of the data
+        index_3 = int(len(A_ri) * 0.03)
+        if index_3 < 2:
+            index_3 = [1]
+        rmse_c = get_rmse_loss(A_ri[:index_3], Ac_i[:index_3])
+        rmse_j = get_rmse_loss(A_ri[:index_3], Aj_i[:index_3])
+        if rmse_c >= rmse_j*0.97:
             mask_vcmax[i] = False
 
     return mask_vcmax
+
+def getValidJmax(fvcbm: initM.FvCB):
+    fvcbm.eval()
+    A, Ac, Aj, Ap = fvcbm()
+    IDs = fvcbm.lcd.IDs
+
+    mask_jmax = torch.tensor([True]*len(IDs))
+    for i in range(len(IDs)):
+        indices = fvcbm.lcd.getIndicesbyID(IDs[i])
+        A_ri = fvcbm.lcd.A[indices]
+        Ac_i = Ac[indices]
+        Ap_i = Ap[indices]
+        A_i = A[indices]
+        # get the first 3 % of the data
+        index_3 = int(len(A_ri) * 0.05)
+        if index_3 < 2:
+            index_3 = [1]
+        # get the min of Ac and Ap
+        Acp_min = torch.min(torch.stack((Ac_i, Ap_i)), dim=0).values
+        rmse_cp = get_rmse_loss(A_ri[index_3:-index_3], Acp_min[index_3:-index_3])
+        rmse_a = get_rmse_loss(A_ri[index_3:-index_3], A_i[index_3:-index_3])
+        if rmse_a > rmse_cp:
+            mask_jmax[i] = False
+    return mask_jmax
 
 def getValidTPU(fvcbm: initM.FvCB):
     fvcbm.eval()
@@ -140,13 +164,13 @@ def getValidTPU(fvcbm: initM.FvCB):
         Aj_i = Aj[indices]
         Ap_i = Ap[indices]
         # get the last 5 % of the data
-        index_10 = int(len(A_ri) * 0.05)
-        if index_10 < 2:
-            index_10 = [1]
-        rmse_p = get_rmse_loss(A_ri[-index_10:], Ap_i[-index_10:])
-        rmse_j = get_rmse_loss(A_ri[-index_10:], Aj_i[-index_10:])
+        index_5 = int(len(A_ri) * 0.06)
+        if index_5 < 2:
+            index_5 = [1]
+        rmse_p = get_rmse_loss(A_ri[-index_5:], Ap_i[-index_5:])
+        rmse_j = get_rmse_loss(A_ri[-index_5:], Aj_i[-index_5:])
 
-        if rmse_p >= rmse_j:
+        if rmse_p >= rmse_j*0.96:
             mask_tpu[i] = False
 
     return mask_tpu
