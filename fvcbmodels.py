@@ -493,7 +493,7 @@ class Loss(nn.Module):
         self.fitCorrelation = fitCorrelation
         self.weakconstiter = weakconstiter
         self.Ci = lcd.Ci
-        self.mask_Ci450 = (lcd.Ci > 450) & (lcd.Ci < 600)
+        self.mask_Ci500 = (lcd.Ci > 500) & (lcd.Ci < 700)
 
     def forward(self, fvc_model, An_o, Ac_o, Aj_o, Ap_o,iter):
 
@@ -563,8 +563,8 @@ class Loss(nn.Module):
         # penalty that Ap less than 0
         loss += torch.sum(self.relu(-Ap_o))
 
-        # penalty that Aj is larger than Ac at Ci between 450 and 600
-        penalty_jc = torch.clamp(Aj_o[self.mask_Ci450] - Ac_o[self.mask_Ci450], min=0) * 0.1
+        # penalty that Aj is larger than Ac at Ci between 500 and 700
+        penalty_jc = torch.clamp(Aj_o[self.mask_Ci500] - Ac_o[self.mask_Ci500], min=0) * 0.1
         loss += torch.sum(penalty_jc)
 
         Acj_o_diff = Ac_o - Aj_o
@@ -639,10 +639,7 @@ class Loss(nn.Module):
             penalty_inter = penalty_inter + torch.sum(torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0))
 
             ## penalty that first Ac is larger than Aj
-            if fvc_model.fitRd:
-                penalty_cj = torch.clamp(Ac_o[self.indices_start] - Aj_o[self.indices_start], min=0)
-            else:
-                penalty_cj = torch.clamp(Ac_o[self.indices_start] - Aj_o[self.indices_start], min=0) * 0.5
+            penalty_cj = torch.clamp(Ac_o[self.indices_start] - Aj_o[self.indices_start], min=0)
 
             penalty_inter += torch.sum(penalty_cj)
             # penalty_inter = penalty_inter + torch.sum(torch.clamp(5 - ls_Aj, min=0))
