@@ -634,7 +634,6 @@ class Loss(nn.Module):
                     loss += self.relu(fvc_model.alphaG)[0] * 10
 
         else:
-
             # penalty that Ap is less than the intersection of Ac and Aj
             penalty_inter = penalty_inter + torch.sum(torch.clamp(Aj_inter * 1.1 - Ap_inter, min=0))
 
