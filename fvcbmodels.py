@@ -494,6 +494,7 @@ class Loss(nn.Module):
         self.weakconstiter = weakconstiter
         self.Ci = lcd.Ci
         self.mask_Ci500 = (lcd.Ci > 500) & (lcd.Ci < 700)
+        self.num_IDs = lcd.num
 
     def forward(self, fvc_model, An_o, Ac_o, Aj_o, Ap_o,iter):
 
@@ -573,19 +574,21 @@ class Loss(nn.Module):
         penalty_inter = torch.tensor(0.0)
 
         Acj_o_diff_abs = torch.abs(Acj_o_diff)
+
         # Acj_o_diff = self.relu(Acj_o_diff)
         Ajc_o_diff = self.relu(Ajc_o_diff)
 
         indices_closest = torch.tensor([]).long().to(Aj_o.device)
         ls_Aj = torch.tensor([]).float().to(Aj_o.device)
         # ls_Ac = torch.tensor([]).float()
-        for i in range(fvc_model.curvenum):
+        for i in range(self.num_IDs):
 
             index_start = self.indices_start[i]
             index_end = self.indices_end[i]
 
             # get the index that Ac closest to Aj
             index_closest = torch.argmin(Acj_o_diff_abs[index_start:index_end])
+
             indices_closest = torch.cat((indices_closest, index_closest.unsqueeze(0)), dim=0)
 
             # startdiff = Acj_o_diff_abs[index_start]
@@ -604,7 +607,7 @@ class Loss(nn.Module):
             # ls_Ac_i = torch.sum(Acj_o_diff[index_start:index_end])
             # penalty_inter = penalty_inter + torch.clamp(5 - ls_Ac_i, min=0)
             # ls_Ac = torch.cat((ls_Ac, ls_Ac_i.unsqueeze(0)))
-            
+
         Aj_inter = Aj_o[self.indices_start + indices_closest]
         Ap_inter = Ap_o[self.indices_start + indices_closest]
 
