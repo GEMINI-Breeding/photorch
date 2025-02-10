@@ -36,7 +36,11 @@ The data to be loaded should be:
 
 ```bash
 dftest = pd.read_csv('dfMAGIC043_lr.csv')
-# initialize the data, and preprocess the data
+# remove the rows with negative A values
+dftest = dftest[dftest['A'] > 0]
+```
+### Initialize the data
+```bash
 # specify the list of light response curve IDs, if no light response curve, input "lightresp_id = None"
 lcd = fitaci.initD.initLicordata(dftest, preprocess=True, lightresp_id = [118])
 ```
@@ -71,7 +75,7 @@ fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = F
 ### More fitting options
 fitRd: option to fit $R_{d25}$, default is True. If set to False, $R_{d}$ will be fixed to 1% of $V_{cmax}$.
 
-fitRdratio: option to fit $R_{d}$-to-$V_{cmax}$ ratio, default is False, the range is 0.01 to 0.02. 
+fitRdratio: option to fit $R_{d}$-to- $V_{cmax}$ ratio, default is False, the range is 0.01 to 0.02. 
 
 fitag: option to fit $\alpha_g$, default is False, the range is 0 to 1.
 
@@ -85,7 +89,7 @@ fitgm: option to fit $g_m$, default is False.
 ```bash
 fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitRd = True, fitRdratio = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
 ```
-### (Alternatively) Specify default fixed or learnable parameters.
+### Specify default fixed or learnable parameters
 ```bash
 allparams = fitaci.initM.allparameters()
 allparams.dHa_Vcmax = torch.tensor(40.0)
