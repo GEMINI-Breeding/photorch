@@ -16,7 +16,7 @@ class modelresult():
         self.losses = loss_all
         self.recordweights = allweights
 
-def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000, minloss = 3, recordweightsTF = False, fitcorr = False, ApCithreshold = 600, weakconstiter = 10000):
+def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000, minloss = 3, recordweightsTF = False, fitcorr = False, ApCithreshold = 600, weakconstiter = 10000, printout = True):
     start_time = time.time()
 
     if device == 'cuda':
@@ -57,7 +57,7 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000,
         loss = criterion(fvcbm, An_o, Ac_o, Aj_o, Ap_o,iter)
 
         loss.backward()
-        if (iter + 1) % 200 == 0:
+        if (iter + 1) % 200 == 0 and printout:
             print(f'Loss at iter {iter}: {loss.item():.4f}')
 
         optimizer.step()
@@ -71,17 +71,18 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000,
             best_weights = fvcbm.state_dict()
             best_iter = iter
 
-        if loss.item() < minloss:
+        if loss.item() < minloss and printout:
             print(f'Fitting stopped at iter {iter}')
             break
-
-    print(f'Best loss at iter {best_iter}: {best_loss:.4f}')
+    if printout:
+        print(f'Best loss at iter {best_iter}: {best_loss:.4f}')
 
     fvcbm.load_state_dict(best_weights)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f'Fitting time: {elapsed_time:.4f} seconds')
+    if printout:
+        print(f'Fitting time: {elapsed_time:.4f} seconds')
     if recordweightsTF:
         modelresult_out = modelresult(fvcbm, loss_all, recordweights.allweights)
     else:

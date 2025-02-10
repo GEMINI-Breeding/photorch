@@ -87,7 +87,7 @@ def preprocessCurve(A, Ci, indices, smoothingwindow = 5, up_treshold=0.06, down_
     return A, Ci, indices
 
 class initLicordata():
-    def __init__(self, LCdata, preprocess = True, lightresp_id = None, smoothingwindow = 10, up_treshold=0.06, down_treshold=0.06):
+    def __init__(self, LCdata, preprocess = True, lightresp_id = None, smoothingwindow = 10, up_treshold=0.06, down_treshold=0.06, printout = True):
         idname = 'CurveID'
         all_IDs = LCdata[idname].values
         self.device = 'cpu'
@@ -138,7 +138,7 @@ class initLicordata():
             indices = indices[sorted_indices]
 
             # if there are Ci less than 0
-            if np.sum(Ci < 0) > 0:
+            if np.sum(Ci < 0) > 0 and printout:
                 print('Warning: Found Ci < 0 in ID:', id, ', removing this A/Ci curve')
                 continue
 
@@ -164,14 +164,16 @@ class initLicordata():
             except:
                 # fill Q with default value 2000
                 self.Q = torch.cat((self.Q, torch.tensor([2000]*len(indices))))
-                print('Warning: Qin not found, filling with default value 2000')
+                if printout:
+                    print('Warning: Qin not found, filling with default value 2000')
             self.Ci = torch.cat((self.Ci, torch.tensor(Ci)))
             try:
                 self.Tleaf = torch.cat((self.Tleaf,torch.tensor(LCdata['Tleaf'].iloc[indices].to_numpy() + 273.15)))
             except:
                 # fill Tleaf with default value 25
                 self.Tleaf = torch.cat((self.Tleaf, torch.tensor([25+273.15]*len(indices))))
-                print('Warning: Tleaf not found, filling with default value 25 C (298.15 K)')
+                if printout:
+                    print('Warning: Tleaf not found, filling with default value 25 C (298.15 K)')
 
             # self.gsw = torch.cat((self.gsw, torch.tensor(LCdata['gsw'].iloc[indices].to_numpy())))
             # self.Ca = torch.cat((self.Ca, torch.tensor(LCdata['Ca'].iloc[indices].to_numpy())))
@@ -199,8 +201,9 @@ class initLicordata():
         self.mask_nolightresp = ~self.mask_lightresp
         # self.mask_fitTPU = self.mask_fitTPU.bool() & self.mask_nolightresp
 
-        # print done reading data information
-        print('Done reading:', self.num, 'A/Ci curves;', len(self.A), 'data points')
+        if printout:
+            # print done reading data information
+            print('Done reading:', self.num, 'A/Ci curves;', len(self.A), 'data points')
 
     def todevice(self, device: torch.device = 'cpu'):
         self.device = device
@@ -215,6 +218,7 @@ class initLicordata():
         self.indices = self.indices.to(device)
         self.lengths = self.lengths.to(device)
         self.mask_lightresp = self.mask_lightresp.to(device)
+        self.mask_nolightresp = self.mask_nolightresp.to(device)
 
     def getDatabyID(self, ID):
         # get the index of ID

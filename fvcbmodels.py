@@ -59,7 +59,7 @@ class allparameters(nn.Module):
         # self.Topt_gm = self.dHd_gm/(self.dS_gm-self.R * torch.log(self.dHa_gm/(self.dHd_gm-self.dHa_gm)))
 
 class LightResponse(nn.Module):
-    def __init__(self, lcd, lr_type: int = 0, allparams = allparameters()):
+    def __init__(self, lcd, lr_type: int = 0, allparams = allparameters(), printout: bool = True):
         super(LightResponse, self).__init__()
         self.Q = lcd.Q
         self.type = lr_type
@@ -69,19 +69,22 @@ class LightResponse(nn.Module):
         self.allparams = allparams
 
         if self.type == 0:
-            print('Light response type 0: No light response.')
+            if printout:
+                print('Light response type 0: No light response.')
             self.alpha = self.allparams.alpha
             self.Q_alpha = self.Q * self.alpha
             self.getJ = self.Function0
 
         elif self.type == 1:
-            print('Light response type 1: alpha will be fitted.')
+            if printout:
+                print('Light response type 1: alpha will be fitted.')
             self.alpha = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.alpha)
             self.alpha = nn.Parameter(self.alpha)
             self.getJ = self.Function1
 
         elif self.type == 2:
-            print('Light response type 2: alpha and theta will be fitted.')
+            if printout:
+                print('Light response type 2: alpha and theta will be fitted.')
             self.alpha = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.alpha)
             self.theta = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.theta)
             self.getJ = self.Function2
@@ -113,7 +116,7 @@ class LightResponse(nn.Module):
         return J
 
 class TemperatureResponse(nn.Module):
-    def __init__(self, lcd, TR_type: int = 0, allparams =  allparameters()):
+    def __init__(self, lcd, TR_type: int = 0, allparams =  allparameters(), printout: bool = True):
         super(TemperatureResponse, self).__init__()
         self.Tleaf = lcd.Tleaf
         self.type = TR_type
@@ -140,7 +143,8 @@ class TemperatureResponse(nn.Module):
             self.getJmax = self.getJmaxF0
             self.getRd = self.getRdF0
             self.getTPU = self.getRdF0
-            print('Temperature response type 0: No temperature response.')
+            if printout:
+                print('Temperature response type 0: No temperature response.')
 
         elif self.type == 1:
             # initial paramters with self.num_FGs repeated
@@ -151,7 +155,8 @@ class TemperatureResponse(nn.Module):
             self.getJmax = self.getJmaxF1
             self.getTPU = self.getTPUF1
             self.getRd = self.getRdF0
-            print('Temperature response type 1: dHa_Vcmax, dHa_Jmax, dHa_TPU will be fitted.')
+            if printout:
+                print('Temperature response type 1: dHa_Vcmax, dHa_Jmax, dHa_TPU will be fitted.')
 
         elif self.type == 2:
             self.dHa_Vcmax = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.dHa_Vcmax)
@@ -172,8 +177,8 @@ class TemperatureResponse(nn.Module):
             self.dHd_R_TPU = self.dHd_TPU / self.allparams.R
             self.rec_Troom = 1 / self.allparams.Troom
             self.rec_Tleaf = 1 / self.Tleaf
-
-            print('Temperature response type 2: dHa_Jmax, dHa_TPU, Topt_Vcmax, Topt_Jmax, Topt_TPU will be fitted.')
+            if printout:
+                print('Temperature response type 2: dHa_Jmax, dHa_TPU, Topt_Vcmax, Topt_Jmax, Topt_TPU will be fitted.')
         else:
             raise ValueError('TemperatureResponse type should be 0, 1 or 2')
 
@@ -290,13 +295,13 @@ class TemperatureResponse(nn.Module):
             param.requires_grad = fitting
 
 class FvCB(nn.Module):
-    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, fitag: bool = False, fitRd: bool = True, fitRdratio: bool = False, allparams =  allparameters()):
+    def __init__(self, lcd, LightResp_type :int = 0, TempResp_type : int = 1, onefit : bool = False, fitgm: bool = False, fitgamma: bool = False, fitKc: bool = False, fitKo: bool = False, fitag: bool = False, fitRd: bool = True, fitRdratio: bool = False, allparams =  allparameters(), printout: bool =True):
         super(FvCB, self).__init__()
         self.lcd = lcd
         self.allparams = allparams
         self.Oxy = self.allparams.oxy
-        self.LightResponse = LightResponse(self.lcd, LightResp_type, self.allparams)
-        self.TempResponse = TemperatureResponse(self.lcd, TempResp_type,self.allparams)
+        self.LightResponse = LightResponse(self.lcd, LightResp_type, self.allparams,printout)
+        self.TempResponse = TemperatureResponse(self.lcd, TempResp_type,self.allparams,printout)
 
         self.fitag = fitag
         if self.fitag:
