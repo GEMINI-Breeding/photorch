@@ -68,11 +68,28 @@ TempResp_type 2: using equation $k = k_{25} \exp\left[\frac{\Delta H_a}{R} \left
 # initialize the model
 fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False)
 ```
-### (Alternatively) Specify default fixed or learnable parameters, and set whether to fit alphag, Kc25, Ko25, gamma25, and gm (all defaults are False).
+### More fitting options
+fitRd: option to fit $R_{d25}$, default is True. If set to False, $R_{d}$ will be fixed to 1% of $V_{cmax}$.
+
+fitRdratio: option to fit $R_{d}$-to-$V_{cmax}$ ratio, default is False, the range is 0.01 to 0.02. 
+
+fitag: option to fit $\alpha_g$, default is False, the range is 0 to 1.
+
+fitKc: option to fit $k_{25}$, default is False.
+
+fitKo: option to fit $k_{25}$, default is False.
+
+fitgamma: option to fit $\Gamma^*_{25}$, default is False.
+
+fitgm: option to fit $g_m$, default is False.
+```bash
+fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitRd = True, fitRdratio = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
+```
+### (Alternatively) Specify default fixed or learnable parameters.
 ```bash
 allparams = fitaci.initM.allparameters()
 allparams.dHa_Vcmax = torch.tensor(40.0)
-fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, fitRd = True, onefit = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
+fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
 ```
 ### Fit A/Ci curves
 ```bash
