@@ -98,7 +98,10 @@ class initLicordata():
             all_FGs = LCdata[fgname].values
             FGs_uq = np.unique(all_FGs)
         except:
-            raise ValueError('FittingGroup not found in the data')
+            # add a new column 'FittingGroup' with all values equal to 1
+            LCdata['FittingGroup'] = 1
+            if printout:
+                print('Warning: FittingGroup not found in the data, adding a FittingGroup column with all values equal to 1')
 
         self.IDs = np.array([])
         self.FGs_idx = np.array([])
@@ -165,7 +168,7 @@ class initLicordata():
                 # fill Q with default value 2000
                 self.Q = torch.cat((self.Q, torch.tensor([2000]*len(indices))))
                 if printout:
-                    print('Warning: Qin not found, filling with default value 2000')
+                    print('Warning: Invalid Qin found, filling with default value 2000')
             self.Ci = torch.cat((self.Ci, torch.tensor(Ci)))
             try:
                 self.Tleaf = torch.cat((self.Tleaf,torch.tensor(LCdata['Tleaf'].iloc[indices].to_numpy() + 273.15)))
@@ -173,7 +176,7 @@ class initLicordata():
                 # fill Tleaf with default value 25
                 self.Tleaf = torch.cat((self.Tleaf, torch.tensor([25+273.15]*len(indices))))
                 if printout:
-                    print('Warning: Tleaf not found, filling with default value 25 C (298.15 K)')
+                    print('Warning: Invalid Tleaf found, filling with default value 25 C (298.15 K)')
 
             # self.gsw = torch.cat((self.gsw, torch.tensor(LCdata['gsw'].iloc[indices].to_numpy())))
             # self.Ca = torch.cat((self.Ca, torch.tensor(LCdata['Ca'].iloc[indices].to_numpy())))
