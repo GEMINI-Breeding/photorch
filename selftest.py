@@ -4,7 +4,7 @@ import torch
 
 def run():
     device_test = ['cpu', 'cuda']
-    pathlcddfs = 'dfMAGIC043_lr.csv'
+    pathlcddfs = 'exampledata/dfMAGIC043_lr.csv'
     pdlMAGIC043 = pd.read_csv(pathlcddfs)
     lighttypes = [2, 1, 0]
     temptypes = [0, 1, 2]
