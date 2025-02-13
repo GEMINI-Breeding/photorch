@@ -114,12 +114,14 @@ class BMF(nn.Module):
         self.Q_i0 = self.Q + self.i0_r
         self.Q_t_br = self.b_r  * self.Q
         self.Q_io_t_D = self.Q_i0 * self.VPD
-        gs = self.Em_r * self.Q_i0 / (self.k_r + self.Q_t_br + self.Q_io_t_D)
+        self.Q_t_br_k = self.Q_t_br + self.k_r
+        self.Q_br_k_io_D_sum = self.Q_t_br_k + self.Q_io_t_D
+        gs = self.Em_r * self.Q_i0 / self.Q_br_k_io_D_sum
         return gs
     def getpenalties(self):
-        dgs_dQ = self.Em_r * ((self.k_r + self.b_r * self.Q + self.Q_io_t_D) - self.Q_i0 * (self.b_r  + self.VPD)) / (self.k_r + self.Q_t_br + self.Q_io_t_D) ** 2
-        dgs_dD = self.Em_r * (-self.Q_i0 ** 2) / (self.k_r + self.Q_t_br + self.Q_io_t_D) ** 2
-        d2gs_dQ2 = - (2 * self.Em_r * (self.k_r - self.i0_r * self.b_r) * (self.b_r + self.VPD)) / (self.k_r + self.Q_t_br + self.Q_io_t_D) ** 3
+        dgs_dQ = self.Em_r * ((self.k_r + self.b_r * self.Q + self.Q_io_t_D) - self.Q_i0 * (self.b_r  + self.VPD)) / self.Q_br_k_io_D_sum** 2
+        dgs_dD = self.Em_r * (-self.Q_i0 ** 2) / self.Q_br_k_io_D_sum ** 2
+        d2gs_dQ2 = - (2 * self.Em_r * (self.k_r - self.i0_r * self.b_r) * (self.b_r + self.VPD)) /self.Q_br_k_io_D_sum** 3
         return dgs_dQ, dgs_dD, d2gs_dQ2
 
 class lossSC(nn.Module):
@@ -130,10 +132,11 @@ class lossSC(nn.Module):
         loss = self.mse(gs_fit, scm.scd.gsw) * 10
         # get all learnable parameters in scm
         for param in scm.parameters():
-            loss += torch.sum(torch.relu(-param))*10
+            loss += torch.sum(torch.relu(-param))
         if scm.model_label == 'BMF':
             dgs_dQ, dgs_dD, d2gs_dQ2 = scm.getpenalties()
             loss += torch.sum(torch.relu(-dgs_dQ))
             loss += torch.sum(torch.relu(dgs_dD))
+            loss += torch.sum(torch.relu(d2gs_dQ2))
 
         return loss

@@ -1,7 +1,7 @@
 import pandas as pd
 import fitaci as fitACi
 import torch
-
+import stomatal
 def run():
     device_test = ['cpu', 'cuda']
     pathlcddfs = 'exampledata/dfMAGIC043_lr.csv'
@@ -58,5 +58,16 @@ def run():
     except:
         raise ValueError('Error in running the FvCB test: Original data without "FittingGroup", "Qin" and "Tleaf".')
 
+    try:
+        print('Stomatal conductance testing case: "BMF"')
+        datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')
+        scd = stomatal.initscdata(datasc, printout=False)
+        scm = stomatal.BMF(scd)
+        scm = stomatal.run(scm, learnrate=0.5, maxiteration=20, printout=False)
+        scm()
+    except:
+        raise ValueError('Error in running the stomatal conductance test.')
+
     print('All FvCB tests passed!')
+    print('All stomatal conductance tests passed!')
 

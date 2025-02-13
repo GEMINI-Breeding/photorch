@@ -43,7 +43,7 @@ def getACi(fvcbmtt, gsw, learnrate = 2, maxiteration = 8000, minloss = 1e-10):
     return gsmtest
 
 
-def run(scm, learnrate = 0.08, maxiteration = 10000, minloss = 1e-6):
+def run(scm, learnrate = 0.5, maxiteration = 20000, minloss = 1e-4, printout = True):
     optimizer = torch.optim.Adam(scm.parameters(), lr=learnrate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5000, gamma=0.9)
     best_loss = 1000000
@@ -58,7 +58,7 @@ def run(scm, learnrate = 0.08, maxiteration = 10000, minloss = 1e-6):
         loss = criterion(scm,gs_fit)
 
         loss.backward()
-        if (iter + 1) % 100 == 0:
+        if (iter + 1) % 200 == 0 and printout:
             # print(vcmax25)
             print(f'Loss at iter {iter}: {loss.item():.4f}')
 
@@ -69,13 +69,15 @@ def run(scm, learnrate = 0.08, maxiteration = 10000, minloss = 1e-6):
             best_loss = loss.item()
             best_weights = scm.state_dict()
             best_iter = iter
-            print(f'Fitting converged at iter {iter}: {loss.item():.4f}')
+            if printout:
+                print(f'Fitting converged at iter {iter}: {loss.item():.4f}')
             break
 
         if loss.item() < best_loss:
             best_loss = loss.item()
             best_weights = scm.state_dict()
             best_iter = iter
-    print(f'Best loss at iter {best_iter}: {best_loss:.4f}')
+    if printout:
+        print(f'Best loss at iter {best_iter}: {best_loss:.4f}')
     scm.load_state_dict(best_weights)
     return scm

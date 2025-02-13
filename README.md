@@ -165,7 +165,7 @@ scd = stomatal.initscdata(datasc)
 ### Initialize the BMF model and fit the parameters Emerson effect (Em), quantum yield of electron transport (i0), curvature factor (k), and intercept (b).
 ```bash
 scm = stomatal.BMF(scd)
-scm = stomatal.run(scm, learnrate = 0.08, maxiteration =20000)
+scm = stomatal.run(scm, learnrate = 0.5, maxiteration =20000)
 ```
 ### Get the fitted and measured stomatal conductance
 ```bash
