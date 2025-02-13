@@ -94,35 +94,46 @@ class MED(nn.Module):
 
 # Buckley Mott Farquhar
 class BMF(nn.Module):
-    def __init__(self, Q, VPD,lcpd=None):
+    def __init__(self, scd):
         super(BMF, self).__init__()
-        if lcpd is None:
-            self.num_FGs = 1
-            self.FGs = torch.tensor([0])
-        else:
-            self.num_FGs = lcpd.num_FGs
-            self.FGs = lcpd.FGs
-        self.Q = Q
-        self.VPD = VPD
-        self.Em = nn.Parameter(torch.ones(self.num_FGs))
-        self.i0 = nn.Parameter(torch.ones(self.num_FGs)*10)
-        self.k = nn.Parameter(torch.ones(self.num_FGs)*10000)
-        self.b = nn.Parameter(torch.ones(self.num_FGs)*10)
+        self.model_label = 'BMF'
+        self.num = scd.num
+        self.Q = scd.Q
+        self.VPD = scd.VPD
+        self.Em = nn.Parameter(torch.ones(self.num))
+        self.i0 = nn.Parameter(torch.ones(self.num)*10)
+        self.k = nn.Parameter(torch.ones(self.num)*10000)
+        self.b = nn.Parameter(torch.ones(self.num)*10)
+        self.scd = scd
+        self.lengths = scd.lengths
     def forward(self):
-        Em = self.Em[self.FGs]
-        i0 = self.i0[self.FGs]
-        k = self.k[self.FGs]
-        b = self.b[self.FGs]
-        gs = Em * (self.Q + i0) / (k + b * self.Q + (self.Q + i0) * self.VPD)
+        self.Em_r = torch.repeat_interleave(self.Em, self.lengths)
+        self.i0_r = torch.repeat_interleave(self.i0, self.lengths)
+        self.k_r = torch.repeat_interleave(self.k, self.lengths)
+        self.b_r = torch.repeat_interleave(self.b, self.lengths)
+        self.Q_i0 = self.Q + self.i0_r
+        self.Q_t_br = self.b_r  * self.Q
+        self.Q_io_t_D = self.Q_i0 * self.VPD
+        gs = self.Em_r * self.Q_i0 / (self.k_r + self.Q_t_br + self.Q_io_t_D)
         return gs
+    def getpenalties(self):
+        dgs_dQ = self.Em_r * ((self.k_r + self.b_r * self.Q + self.Q_io_t_D) - self.Q_i0 * (self.b_r  + self.VPD)) / (self.k_r + self.Q_t_br + self.Q_io_t_D) ** 2
+        dgs_dD = self.Em_r * (-self.Q_i0 ** 2) / (self.k_r + self.Q_t_br + self.Q_io_t_D) ** 2
+        d2gs_dQ2 = - (2 * self.Em_r * (self.k_r - self.i0_r * self.b_r) * (self.b_r + self.VPD)) / (self.k_r + self.Q_t_br + self.Q_io_t_D) ** 3
+        return dgs_dQ, dgs_dD, d2gs_dQ2
 
 class lossSC(nn.Module):
     def __init__(self):
         super().__init__()
         self.mse = nn.MSELoss()
-    def forward(self, scm,gs_fit,gs_true):
-        loss = self.mse(gs_fit, gs_true)
+    def forward(self, scm,gs_fit):
+        loss = self.mse(gs_fit, scm.scd.gsw) * 10
         # get all learnable parameters in scm
         for param in scm.parameters():
             loss += torch.sum(torch.relu(-param))*10
+        if scm.model_label == 'BMF':
+            dgs_dQ, dgs_dD, d2gs_dQ2 = scm.getpenalties()
+            loss += torch.sum(torch.relu(-dgs_dQ))
+            loss += torch.sum(torch.relu(dgs_dD))
+
         return loss

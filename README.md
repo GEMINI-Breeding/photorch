@@ -35,7 +35,7 @@ The data to be loaded should be:
 | 2       | 1            | 700 | 55 | 2000 | 30    |
 
 ```bash
-dftest = pd.read_csv('dfMAGIC043_lr.csv')
+dftest = pd.read_csv('exampledata/dfMAGIC043_lr.csv')
 # remove the rows with negative A values
 dftest = dftest[dftest['A'] > 0]
 ```
@@ -138,27 +138,57 @@ A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[id_index])
 ## 2. Stomatal conductance model usage
 The stomatal conductance model is under development.
 ```bash
-import fitstomat
+import stomatal
 ```
 ### Initialize stomatal conductance models
-Four stomatal conductance models are available: Ball Woodrow Berry (BWB), Ball Berry Leuning (BBL), Medlyn (MED), and Buckley Mott Farquhar (BMF).
+One stomatal conductance model is currently available: Buckley Mott Farquhar (BMF). Other three Ball Berry Leuning (BBL), Medlyn (MED), and Ball Woodrow Berry (BWB) are under development.
 More details about these four models can be found at: https://baileylab.ucdavis.edu/software/helios/_stomatal_doc.html.
 
-All input variables should be torch vector (1-D tensor) of the same length for the model. Abbriviations: rh = relative humidity, VPD = vapor pressure deficit, Gamma = CO2 compensation point.
+### Initialize the stomatal conductance data
+The data to be loaded should be:
+
+| CurveID | gsw | VPDleaf_mmolmol-1 | A  | Qin   | Tleaf | RH   |
+|---------|-----|-------------------|----|-------|-------|------|
+| 0       | 0.34| 11.32             | 55 | 2000  | 21.81 | 21.0 |
+| 0       | 0.34| 18.33             | 55 | 2000  | 22.71 | 30.02|
+| 0       | 0.35| 29.57             | 51 | 2000  | 20.02 | 38.01|
+| 0       | 0.38| 15.4              | 54 | 2000  | 22.6  | 26.99|
+| 0       | 0.32| 15.44             | 54 | 1200  | 19.97 | 27.0 |
+| 1       | 0.23| 29.03             | 49 | 2000  | 17.93 | 35.92|
+| 1       | 0.29| 20.51             | 50 | 2000  | 20.51 | 29.96|
+| 1       | 0.28| 11.77             | 49 | 2000  | 18.61 | 19.99|
+
 ```bash
-# scm = fitstomat.stomat.BWB(A, rh)
-scm = fitstomat.stomat.BMF(Qin, VPD)
-# scm = fitstomat.stomat.MED(A, VPD)
-# scm = fitstomat.stomat.BBL(A, Gamma,VPD)
+datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')
+scd = stomatal.initscdata(datasc)
 ```
-### Fit the parameters of target stomatal conductance model
+### Initialize the BMF model and fit the parameters Emerson effect (Em), quantum yield of electron transport (i0), curvature factor (k), and intercept (b).
 ```bash
-scm = fitstomat.run(scm, gsw, learnrate = 0.01, maxiteration = 8000) # gsw is the stomatal conductance data (same length as above variables).
-scm.Em # the fitted parameter of BMF model
-scm.i0 # the fitted parameter of BMF model
-scm.k # the fitted parameter of BMF model
-scm.b # the fitted parameter of BMF model
+scm = stomatal.BMF(scd)
+scm = stomatal.run(scm, learnrate = 0.08, maxiteration =20000)
 ```
+### Get the fitted and measured stomatal conductance
+```bash
+gsw = scm()
+gsw_mea = scd.gsw
+```
+### Get the fitted stomatal conductance by ID
+```bash
+id_index = 0
+id = scd.IDs[id_index]
+indices_id = scd.getIndicesbyID(id)
+gsw_id = gsw[indices_id]
+```
+### Get the fitted parameters by ID
+```bash
+id_index = 0
+id = int(scd.IDs[id_index])
+Em_id = scm.Em[id_index]
+i0_id = scm.i0[id_index]
+k_id = scm.k[id_index]
+b_id = scm.b[id_index]
+```
+  
 ## 3. PROSPECT-X model usage
 The PROSPECT-X model is under development.
 ```bash

@@ -1,5 +1,5 @@
 import torch
-import stomatalmodels as stomat
+import stomatal.stomatalmodels as stomat
 
 def getACi(fvcbmtt, gsw, learnrate = 2, maxiteration = 8000, minloss = 1e-10):
     gsmtest = stomat.gsACi(torch.tensor(gsw))
@@ -43,10 +43,10 @@ def getACi(fvcbmtt, gsw, learnrate = 2, maxiteration = 8000, minloss = 1e-10):
     return gsmtest
 
 
-def run(scm, gsw, learnrate = 0.01, maxiteration = 8000, minloss = 1e-6):
+def run(scm, learnrate = 0.08, maxiteration = 10000, minloss = 1e-6):
     optimizer = torch.optim.Adam(scm.parameters(), lr=learnrate)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.9)
-    best_loss = 100000
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5000, gamma=0.9)
+    best_loss = 1000000
     best_iter = 0
     best_weights = scm.state_dict()
     criterion = stomat.lossSC()
@@ -55,7 +55,7 @@ def run(scm, gsw, learnrate = 0.01, maxiteration = 8000, minloss = 1e-6):
 
         optimizer.zero_grad()
         gs_fit = scm()
-        loss = criterion(scm,gs_fit,gsw)
+        loss = criterion(scm,gs_fit)
 
         loss.backward()
         if (iter + 1) % 100 == 0:
