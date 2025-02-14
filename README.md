@@ -5,7 +5,7 @@ Read more about PhoTorch in our paper: https://arxiv.org/abs/2501.15484.
 
 **Note: The latest version 1.3.0 includes changes to the file structure and function names within the package.** 
 
-Currently, the package includes the Farquhar, von Caemmerer, and Berry (FvCB) model. The series of stomatal conductance models and the PROSPECT-X model are under development.
+Currently, the package includes the Farquhar, von Caemmerer, and Berry (FvCB) model and the Buckley Mott Farquhar (BMF) stomatal conductance model. The other of stomatal conductance models and the PROSPECT models are under development.
 ## Installation of dependencies
 ```bash
 pip install torch
@@ -17,7 +17,7 @@ pip install pandas
 **Next, download all the files and directories, and try running the examples in the testphotorch.py file!**
 
 ## 1. FvCB model usage
-After installing the dependencies, download the package and import it into your Python script.
+Create a python file in the PhoTorch directory and import necessary packages.
 
 ```bash
 import fvcb

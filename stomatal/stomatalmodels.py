@@ -28,7 +28,7 @@ class lossA(nn.Module):
 
 # Ball Woodrow Berry
 class BWB(nn.Module):
-    def __init__(self, An, rh, lcpd = None):
+    def __init__(self, scd):
         super(BWB, self).__init__()
         if lcpd is None:
             self.num_FGs = 1
@@ -73,23 +73,21 @@ class BBL(nn.Module):
 
 # Medlyn et al.
 class MED(nn.Module):
-    def __init__(self, An, VPD, lcpd = None):
+    def __init__(self, scd):
         super(MED, self).__init__()
-        if lcpd is None:
-            self.num_FGs = 1
-            self.FGs = torch.tensor([0])
-        else:
-            self.num_FGs = lcpd.num_FGs
-            self.FGs = lcpd.FGs
-        self.A = An
-        self.VPD = VPD
-        self.gs0 = nn.Parameter(torch.ones(self.num_FGs))
-        self.g1 = nn.Parameter(torch.ones(self.num_FGs))
+        self.model_label = 'MED'
+        self.num = scd.num
+        self.A = scd.A
+        self.VPD = scd.VPD
+        self.gs0 = nn.Parameter(torch.ones(self.num))
+        self.g1 = nn.Parameter(torch.ones(self.num))
         self.Ca = torch.tensor(420.0)
+        self.scd = scd
+        self.lengths = scd.lengths
     def forward(self):
-        gs0 = self.gs0[self.FGs]
-        g1 = self.g1[self.FGs]
-        gs = gs0 + 1.6 * (1 + g1 / torch.sqrt(self.VPD / 1000 * 101.3)) * self.A / self.Ca
+        self.gs0_r = torch.repeat_interleave(self.gs0, self.lengths)
+        self.g1_r = torch.repeat_interleave(self.g1, self.lengths)
+        gs = self.gs0_r + 1.6 * (1 + self.g1_r / torch.sqrt(self.VPD / 1000 * 101.3)) * self.A / self.Ca
         return gs
 
 # Buckley Mott Farquhar
@@ -112,10 +110,8 @@ class BMF(nn.Module):
         self.k_r = torch.repeat_interleave(self.k, self.lengths)
         self.b_r = torch.repeat_interleave(self.b, self.lengths)
         self.Q_i0 = self.Q + self.i0_r
-        self.Q_t_br = self.b_r  * self.Q
         self.Q_io_t_D = self.Q_i0 * self.VPD
-        self.Q_t_br_k = self.Q_t_br + self.k_r
-        self.Q_br_k_io_D_sum = self.Q_t_br_k + self.Q_io_t_D
+        self.Q_br_k_io_D_sum = self.b_r  * self.Q + self.k_r + self.Q_io_t_D
         gs = self.Em_r * self.Q_i0 / self.Q_br_k_io_D_sum
         return gs
     def getpenalties(self):
