@@ -1,8 +1,8 @@
 # PhoTorch
 # A/Ci curve optimizer
 import torch
-import fvcbmodels as initM
-import initphotodata as initD
+import fvcb.fvcbmodels as initM
+# import fvcb.initphotodata as initD
 import time
 
 # get rmse loss
@@ -44,12 +44,15 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000,
                     self.allweights[name] = param.data.cpu().unsqueeze(0)
                 else:
                     self.allweights[name] = torch.cat((self.allweights[name], param.data.cpu().unsqueeze(0)), dim=0)
-            # add alphaG to the record
-            self.allweights['alphaG'] = model.alphaG.data.cpu().unsqueeze(0)
+            if model.fitag:
+                # add alphaG to the record
+                self.allweights['alphaG'] = model.alphaG.data.cpu().unsqueeze(0)
 
     recordweights = recordweights()
 
     for iter in range(maxiteration):
+        # if iter == weakconstiter and loss < 5:
+        #     criterion.weakconstiter = weakconstiter * 2
 
         optimizer.zero_grad()
 

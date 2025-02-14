@@ -1,7 +1,7 @@
 import pandas as pd
-import fitaci as fitACi
 import torch
 import stomatal
+import fvcb
 def run():
     device_test = ['cpu', 'cuda']
     pathlcddfs = 'exampledata/dfMAGIC043_lr.csv'
@@ -18,8 +18,9 @@ def run():
         if idevice == 'cuda':
             if not torch.cuda.is_available():
                 idevice = 'cpu'
+                print('Cuda is not available, no test will be run on cuda.')
                 break
-        lcd = fitACi.initD.initLicordata(pdlMAGIC043, preprocess=True, lightresp_id=[118], printout=False)
+        lcd = fvcb.initLicordata(pdlMAGIC043, preprocess=True, lightresp_id=[118], printout=False)
         lcd.todevice(idevice)
         for lighttype in lighttypes:
             for temptype in temptypes:
@@ -36,11 +37,11 @@ def run():
                                 if lighttype == 0 and not lightremoved:
                                     lightremoved = True
                                     pdlMAGIC043 = pdlMAGIC043[pdlMAGIC043['CurveID'] != 118]
-                                    lcd = fitACi.initD.initLicordata(pdlMAGIC043, preprocess=False, printout=False)
+                                    lcd = fvcb.initLicordata(pdlMAGIC043, preprocess=False, printout=False)
                                     lcd.todevice(idevice)
 
-                                fvcbmMAGIC043 = fitACi.initM.FvCB(lcd, LightResp_type = lighttype, TempResp_type = temptype, onefit = onef, fitgm= True, fitgamma=KGfit, fitKo=KGfit, fitKc=KGfit,fitRd=Rdfit, fitRdratio=~Rdfit,printout=False)
-                                resultfit = fitACi.run(fvcbmMAGIC043, learn_rate=0.8, device=idevice, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=True, printout=False)
+                                fvcbmMAGIC043 = fvcb.model(lcd, LightResp_type = lighttype, TempResp_type = temptype, onefit = onef, fitgm= True, fitgamma=KGfit, fitKo=KGfit, fitKc=KGfit, fitRd=Rdfit, fitRdratio=~Rdfit, printout=False)
+                                resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, device=idevice, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=True, printout=False,weakconstiter=5)
                                 resultfit.model()
                                 # check if all fit parameters are not nan
                             except:
@@ -50,20 +51,30 @@ def run():
         print('FvCB testing case: Original data without "FittingGroup", "Qin" and "Tleaf".')
         # remove the column "Qin" and "Tleaf"
         pdlMAGIC043 = pdlMAGIC043.drop(columns=['Qin', 'Tleaf','FittingGroup'])
-        lcd = fitACi.initD.initLicordata(pdlMAGIC043, preprocess=True, printout=False)
+        lcd = fvcb.initLicordata(pdlMAGIC043, preprocess=True, printout=False)
         lcd.todevice(idevice)
-        fvcbmMAGIC043 = fitACi.initM.FvCB(lcd, LightResp_type=0, TempResp_type=0, printout=False)
-        resultfit = fitACi.run(fvcbmMAGIC043, learn_rate=0.8, device=idevice, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=False, printout=False)
+        fvcbmMAGIC043 = fvcb.model(lcd, LightResp_type=0, TempResp_type=0, printout=False)
+        resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, device=idevice, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=False, printout=False)
         resultfit.model()
     except:
         raise ValueError('Error in running the FvCB test: Original data without "FittingGroup", "Qin" and "Tleaf".')
+
+    try:
+        print('FvCB testing case: Reset parameters and record weights.')
+        allparams = fvcb.allparameters()
+        allparams.alphaG = torch.tensor([0.1]).to(idevice)
+        fvcbmMAGIC043 = fvcb.model(lcd, LightResp_type=0, TempResp_type=0, printout=False, allparams=allparams)
+        resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, device=idevice, maxiteration=10, minloss=1, recordweightsTF=True, fitcorr=False, printout=False)
+        resultfit.model()
+    except:
+        raise ValueError('Error in running the FvCB test: Reset parameters and record weights.')
 
     try:
         print('Stomatal conductance testing case: "BMF"')
         datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')
         scd = stomatal.initscdata(datasc, printout=False)
         scm = stomatal.BMF(scd)
-        scm = stomatal.run(scm, learnrate=0.5, maxiteration=20, printout=False)
+        scm = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
         scm()
     except:
         raise ValueError('Error in running the stomatal conductance test.')

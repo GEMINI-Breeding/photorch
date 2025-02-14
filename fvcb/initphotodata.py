@@ -208,7 +208,7 @@ class initLicordata():
             # print done reading data information
             print('Done reading:', self.num, 'A/Ci curves;', len(self.A), 'data points')
 
-    def todevice(self, device: torch.device = 'cpu'):
+    def todevice(self, device: str = 'cpu'):
         self.device = device
         self.A = self.A.to(device)
         self.Q = self.Q.to(device)

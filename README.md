@@ -2,6 +2,9 @@
 
 PhoTorch is a robust and generalized photosynthesis biochemical model fitting package based on PyTorch.
 Read more about PhoTorch in our paper: https://arxiv.org/abs/2501.15484.
+
+**Note: The latest version 1.3.0 includes changes to the file structure and function names within the package.** 
+
 Currently, the package includes the Farquhar, von Caemmerer, and Berry (FvCB) model. The series of stomatal conductance models and the PROSPECT-X model are under development.
 ## Installation of dependencies
 ```bash
@@ -10,11 +13,14 @@ pip install numpy
 pip install scipy
 pip install pandas
 ```
+
+**Next, download all the files and directories, and try running the examples in the testphotorch.py file!**
+
 ## 1. FvCB model usage
 After installing the dependencies, download the package and import it into your Python script.
 
 ```bash
-import fitaci
+import fvcb
 import pandas as pd
 import torch
 ```
@@ -42,7 +48,7 @@ dftest = dftest[dftest['A'] > 0]
 ### Initialize the data
 ```bash
 # specify the list of light response curve IDs, if no light response curve, input "lightresp_id = None"
-lcd = fitaci.initD.initLicordata(dftest, preprocess=True, lightresp_id = [118])
+lcd = fvcb.initLicordata(dftest, preprocess=True, lightresp_id = [118])
 ```
 ### Define the device
 'cuda' means an NVIDIA GPU will be used. If you want to use the CPU, set 'device_fit' to 'cpu'.
@@ -70,7 +76,7 @@ TempResp_type 2: using equation $k = k_{25} \exp\left[\frac{\Delta H_a}{R} \left
 
 ```bash
 # initialize the model
-fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False)
+fvcbm = fvcb.model(lcd, LightResp_type = 2, TempResp_type = 2, onefit = False)
 ```
 ### More fitting options
 fitRd: option to fit $R_{d25}$, default is True. If set to False, $R_{d}$ will be fixed to 1% of $V_{cmax}$.
@@ -87,17 +93,17 @@ fitgamma: option to fit $\Gamma^*_{25}$, default is False.
 
 fitgm: option to fit $g_m$, default is False.
 ```bash
-fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitRd = True, fitRdratio = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
+fvcbm = fvcb.model(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitRd = True, fitRdratio = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
 ```
 ### Specify default fixed or learnable parameters
 ```bash
-allparams = fitaci.initM.allparameters()
-allparams.dHa_Vcmax = torch.tensor(40.0)
-fvcbm = fitaci.initM.FvCB(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
+allparams = fvcb.allparameters()
+allparams.dHa_Vcmax = torch.tensor(40.0).to(device_fit) # If the device is cuda, then execute ".to(device_fit)"
+fvcbm = fvcb.model(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, fitag = False, fitgm= False, fitgamma=False, fitKo=False, fitKc=False, allparams=allparams)
 ```
 ### Fit A/Ci curves
 ```bash
-fitresult = fitaci.run(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 20000, minloss= 1, recordweightsTF=False)
+fitresult = fvcb.fit(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 20000, minloss= 1, recordweightsTF=False)
 fvcbm = fitresult.model
 ```
 ### Get fitted parameters by ID
@@ -165,7 +171,7 @@ scd = stomatal.initscdata(datasc)
 ### Initialize the BMF model and fit the parameters Emerson effect (Em), quantum yield of electron transport (i0), curvature factor (k), and intercept (b).
 ```bash
 scm = stomatal.BMF(scd)
-scm = stomatal.run(scm, learnrate = 0.5, maxiteration =20000)
+scm = stomatal.fit(scm, learnrate = 0.5, maxiteration =20000)
 ```
 ### Get the fitted and measured stomatal conductance
 ```bash
@@ -191,6 +197,3 @@ b_id = scm.b[id_index]
   
 ## 3. PROSPECT-X model usage
 The PROSPECT-X model is under development.
-```bash
-import prospectmodels
-```
