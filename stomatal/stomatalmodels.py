@@ -23,24 +23,22 @@ class lossA(nn.Module):
         self.mse = nn.MSELoss()
     def forward(self, An_fvcb, An_gs,Ci):
         loss = self.mse(An_fvcb, An_gs)
-        loss += torch.sum(torch.relu(-Ci))*100
+        loss += torch.sum(torch.relu(1-Ci))*100
         return loss
 
 # Ball Woodrow Berry
 class BWB(nn.Module):
     def __init__(self, scd):
         super(BWB, self).__init__()
-        if lcpd is None:
-            self.num_FGs = 1
-            self.FGs = torch.tensor([0])
-        else:
-            self.num_FGs = lcpd.num_FGs
-            self.FGs = lcpd.FGs
+        self.model_label = 'BWB'
+        self.num = scd.num
         self.Ca = torch.tensor(420.0)
-        self.A = An
-        self.rh = rh
-        self.gs0 = nn.Parameter(torch.ones(self.num_FGs))
-        self.a1 = nn.Parameter(torch.ones(self.num_FGs))
+        self.A = scd.A
+        self.rh = scd.rh
+        self.gs0 = nn.Parameter(torch.ones(self.num))
+        self.a1 = nn.Parameter(torch.ones(self.num))
+        self.scd = scd
+        self.lengths = scd.lengths
     def forward(self):
         gs0 = self.gs0[self.FGs]
         a1 = self.a1[self.FGs]
@@ -49,20 +47,16 @@ class BWB(nn.Module):
 
 # Ball Berry Leuning
 class BBL(nn.Module):
-    def __init__(self, An, Gamma, VPD, lcpd = None):
+    def __init__(self, scd):
         super(BBL, self).__init__()
-        if lcpd is None:
-            self.num_FGs = 1
-            self.FGs = torch.tensor([0])
-        else:
-            self.num_FGs = lcpd.num_FGs
-            self.FGs = lcpd.FGs
-        self.Gamma = Gamma
-        self.VPD = VPD
-        self.A = An
-        self.gs0 = nn.Parameter(torch.ones(self.num_FGs))
-        self.a1 = nn.Parameter(torch.ones(self.num_FGs))
-        self.D0 = nn.Parameter(torch.ones(self.num_FGs))
+        self.model_label = 'BBL'
+        self.num = scd.num
+        self.Gamma = scd.Gamma
+        self.VPD = scd.VPD
+        self.A = scd.A
+        self.gs0 = nn.Parameter(torch.ones(self.num))
+        self.a1 = nn.Parameter(torch.ones(self.num))
+        self.D0 = nn.Parameter(torch.ones(self.num))
         self.Ca = torch.tensor(420.0)
     def forward(self):
         gs0 = self.gs0[self.FGs]

@@ -465,9 +465,7 @@ class FvCB(nn.Module):
 
     def getGamma(self):
         if self.Vcmax is None:
-            vcmax25, jmax25, tpu25, rd25 = self.expandparam(self.Vcmax25, self.Jmax25, self.TPU25, self.Rd25)
-            self.Vcmax = self.TempResponse.getVcmax(vcmax25)
-            self.Rd = self.TempResponse.getRd(rd25)
+            raise ValueError('Please run fvcb model first!')
         gamma_all = (self.Gamma + self.Kco * self.Rd / self.Vcmax) / (1 - self.Rd / self.Vcmax)
         return gamma_all
 
@@ -499,6 +497,7 @@ class Loss(nn.Module):
         self.mask_nolightresp = lcd.mask_nolightresp
         self.mask_fitAp = lcd.Ci[self.end_indices] > fitApCi # mask that last Ci is larger than specific value
         self.mask_fitAp = self.mask_fitAp.bool() & lcd.mask_nolightresp
+        self.existAp = sum(self.mask_fitAp) > 0
         self.fitCorrelation = fitCorrelation
         self.weakconstiter = weakconstiter
         self.Ci = lcd.Ci
@@ -631,10 +630,10 @@ class Loss(nn.Module):
 
         Aj_inter = Aj_o[self.indices_start + indices_closest]
         Ap_inter = Ap_o[self.indices_start + indices_closest]
-
+            
         # add constraint loss for last point
         # penalty that last Ap is larger than Ac and Aj
-        if sum(self.mask_fitAp) > 0:
+        if self.existAp:
             Ap_jc_diff = Ap_o[self.end_indices] - Aj_o[self.end_indices]
             penalty_pj = torch.clamp(Ap_jc_diff[self.mask_fitAp], min=0)
             penalty_inter += torch.sum(penalty_pj)

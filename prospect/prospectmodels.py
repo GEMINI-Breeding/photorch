@@ -101,7 +101,7 @@ class prospectdcore(nn.Module):
         self.N = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 1.2)
         self.cab = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 30)  # chlorophyll content (mu g/cm2)
         self.car = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 10)  # carotenoid content (mu g/cm2)
-        self.cbrown = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 0.00001)  # brown pigment content (arbitrary units)
+        # self.cbrown = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 0.00001)  # brown pigment content (arbitrary units)
         self.water = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 0.005)  # equivalent water thickness (cm)
         self.lma = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 0.02)  # leaf mass per unit area (g/cm2)
         self.cant = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 1.0)  # anthocyanin content (mu g/cm2)
@@ -111,7 +111,7 @@ class prospectdcore(nn.Module):
         self.kab = torch.tensor(kab_d, dtype=torch.float)
         self.kcar = torch.tensor(kcar_d, dtype=torch.float)
         self.kant = torch.tensor(kant_d, dtype=torch.float)
-        self.kbrown = torch.tensor(kbrown_d, dtype=torch.float)
+        # self.kbrown = torch.tensor(kbrown_d, dtype=torch.float)
         self.kw = torch.tensor(kw_d, dtype=torch.float)
         self.km = torch.tensor(km_d, dtype=torch.float)
         self.lambdas = torch.arange(400, 2501).float()
@@ -122,8 +122,8 @@ class prospectdcore(nn.Module):
         self.getonelayer = reftrans_onelayer()
 
     def forward(self):
-        kall = (self.cab * self.kab + self.car * self.kcar + self.cant * self.kant + self.cbrown * self.kbrown + self.water * self.kw + self.lma * self.km) / self.N
-
+        # kall = (self.cab * self.kab + self.car * self.kcar + self.cant * self.kant + self.cbrown * self.kbrown + self.water * self.kw + self.lma * self.km) / self.N
+        kall = (self.cab * self.kab + self.car * self.kcar + self.cant * self.kant + self.water * self.kw + self.lma * self.km) / self.N
         kall = torch.clamp(kall, min=0.0001)
         t1 = (1 - kall) * torch.exp(-kall)
         t2 = torch.pow(kall, 2) * (-self.expi(-kall))
@@ -136,8 +136,9 @@ class prospectdcore(nn.Module):
         D = torch.sqrt((1 + rpt) * (1 + rmt) * (1. - rmt) * (1. - rpt))
         rq = torch.pow(r, 2)
         tq = torch.pow(t, 2)
-        a = (1 + rq - tq + D) / (2 * r)
-        b = (1 - rq + tq + D) / (2 * t)
+        rqmtq = rq - tq
+        a = (1 + rqmtq + D) / (2 * r)
+        b = (1 - rqmtq + D) / (2 * t)
         bnm1 = torch.pow(b, self.N - 1)
         bn2 = torch.pow(bnm1, 2)
         a2 = a * a
@@ -204,8 +205,9 @@ class Loss(nn.Module):
         loss += torch.sum(torch.clamp(promodel.lma-0.04, min=0))
 
         # add penalty if correlation between car and cab is less than 0.9
-        loss += correlationloss(promodel.car,promodel.cab, 0.9)
-
+        if len(promodel.car) > 8:
+            loss += correlationloss(promodel.car,promodel.cab, 0.9)
+            loss += correlationloss(promodel.water, promodel.lma, 0.6)
 
         loss += self.mse(pred_ref[:, :-150], target_ref[:, :-100])
         if pred_tran is not None and target_tran is not None:

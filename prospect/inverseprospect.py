@@ -9,7 +9,7 @@ def getAnthocyanin(refspectra, wavelength = torch.arange(400,2501,1)):
     cant = 2.11 * mari + 0.45
     return cant.unsqueeze(1)
 
-def run(prospectm: prospect.prospectdcore, refspectra32: torch.Tensor, learning_rate: float = 0.004, max_iter: int = 1000):
+def run(prospectm: prospect.prospectdcore, refspectra32: torch.Tensor, transpectra32: torch.Tensor=None, learning_rate: float = 0.004, max_iter: int = 1000):
     device = torch.device('cpu')
 
     # set propc.cant gradient to False
@@ -34,8 +34,10 @@ def run(prospectm: prospect.prospectdcore, refspectra32: torch.Tensor, learning_
             # set all negative values to 0
             cantc = torch.clamp(cantc, min=0)
             prospectm.cant = nn.Parameter(cantc, requires_grad=False)
-
-        loss = criteria(prospectm, pred_specr, refspectra32, pred_trans)
+        if transpectra32 is None:
+            loss = criteria(prospectm, pred_specr, refspectra32)
+        else:
+            loss = criteria(prospectm, pred_specr, refspectra32, pred_trans, transpectra32)
 
         loss.backward()
 

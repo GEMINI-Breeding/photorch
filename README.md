@@ -25,8 +25,7 @@ import pandas as pd
 import torch
 ```
 ### Load data
-Load the example CSV file. Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it.
-The loaded data frame should have columns with titles 'CurveID', 'FittingGroup', 'Ci', 'A', 'Qin', and 'Tleaf'. Each A/Ci curve should have a unique 'CurveID'.
+Load the example CSV file. The loaded data frame should have columns with titles 'CurveID', 'FittingGroup', 'Ci', 'A', 'Qin', and 'Tleaf'. Each A/Ci curve should have a unique 'CurveID'.
 If no 'Qin' and 'Tleaf' are available, it will be automatically set to 2000 and 25, respectively.
 
 The data to be loaded should be:
@@ -46,12 +45,13 @@ dftest = pd.read_csv('exampledata/dfMAGIC043_lr.csv')
 dftest = dftest[dftest['A'] > 0]
 ```
 ### Initialize the data
+Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it (default is None).
 ```bash
-# specify the list of light response curve IDs, if no light response curve, input "lightresp_id = None"
+# Specify the list of light response curve IDs, if no light response curve, input "lightresp_id = None" or ignore it.
 lcd = fvcb.initLicordata(dftest, preprocess=True, lightresp_id = [118])
 ```
 ### Define the device
-'cuda' means an NVIDIA GPU will be used. If you want to use the CPU, set 'device_fit' to 'cpu'.
+Default device is 'cpu'. If you have an NVIDIA GPU, set 'device_fit' to 'cuda' and execute the 'lcd.todevice(torch.device(device_fit))' line.
 ```bash
 device_fit = 'cpu'
 lcd.todevice(torch.device(device_fit)) # if device is cuda, then execute this line
@@ -107,7 +107,7 @@ fitresult = fvcb.fit(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 
 fvcbm = fitresult.model
 ```
 ### Get fitted parameters by ID
-The main parameters are stored in the 'fvbm'. The temperature response parameters are in 'fvcbm.TempResponse', just like the light response parameters.
+The main parameters are stored in the 'fvcbm'. The temperature response parameters are in 'fvcbm.TempResponse', just like the light response parameters.
 ```bash
 id_index = 0
 id = int(lcd.IDs[id_index]) # target curve ID
