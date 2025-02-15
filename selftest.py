@@ -20,8 +20,12 @@ def run():
                 idevice = 'cpu'
                 print('Cuda is not available, no test will be run on cuda.')
                 break
-        lcd = fvcb.initLicordata(pdlMAGIC043, preprocess=True, lightresp_id=[118], printout=False)
-        lcd.todevice(idevice)
+        try:
+            print('FvCB testing case: Initialization of Licor data.')
+            lcd = fvcb.initLicordata(pdlMAGIC043, preprocess=True, lightresp_id=[118], printout=False)
+            lcd.todevice(idevice)
+        except:
+            raise ValueError('Error in running the FvCB test: Initialization of Licor data failed.')
         for lighttype in lighttypes:
             for temptype in temptypes:
                 for onef in onefits:
@@ -69,15 +73,37 @@ def run():
     except:
         raise ValueError('Error in running the FvCB test: Reset parameters and record weights.')
 
-    try:
-        print('Stomatal conductance testing case: "BMF"')
-        datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')
-        scd = stomatal.initscdata(datasc, printout=False)
-        scm = stomatal.BMF(scd)
-        scm = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
-        scm()
-    except:
-        raise ValueError('Error in running the stomatal conductance test.')
+    stomatallabels = ['BMF','BWB','MED']
+    for stomataltype in stomatallabels:
+        try:
+            datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')
+            scd = stomatal.initscdata(datasc, printout=False)
+        except:
+            raise ValueError('Error in running the stomatal conductance test: Initialization of stomatal data failed.')
+        if stomataltype == 'BMF':
+            try:
+                print('Stomatal conductance testing case: "BMF"')
+                scm = stomatal.BMF(scd)
+                scm = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
+                scm()
+            except:
+                raise ValueError('Error in running the stomatal conductance test: "BMF"')
+        elif stomataltype == 'BWB':
+            try:
+                print('Stomatal conductance testing case: "BWB"')
+                scm = stomatal.BWB(scd)
+                scm = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
+                scm()
+            except:
+                raise ValueError('Error in running the stomatal conductance test: "BWB"')
+        elif stomataltype == 'MED':
+            try:
+                print('Stomatal conductance testing case: "MED"')
+                scm = stomatal.MED(scd)
+                scm = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
+                scm()
+            except:
+                raise ValueError('Error in running the stomatal conductance test: "MED"')
 
     print('All FvCB tests passed!')
     print('All stomatal conductance tests passed!')

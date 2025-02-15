@@ -5,7 +5,7 @@ Read more about PhoTorch in our paper: https://arxiv.org/abs/2501.15484.
 
 **Note: The latest version 1.3.0 includes changes to the file structure and function names within the package.** 
 
-Currently, the package includes the Farquhar, von Caemmerer, and Berry (FvCB) model and the Buckley Mott Farquhar (BMF) stomatal conductance model. The other of stomatal conductance models and the PROSPECT models are under development.
+Currently, the package includes the Farquhar, von Caemmerer, and Berry (FvCB) model and stomatal conductance models including Buckley Mott Farquhar (BMF), Medlyn (MED), and Ball Woodrow Berry (BWB) versions. The Ball Berry Leuning (BBL) stomatal conductance model and the PROSPECT models are under development.
 ## Installation of dependencies
 ```bash
 pip install torch
@@ -142,14 +142,15 @@ A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[id_index])
 ***
 
 ## 2. Stomatal conductance model usage
-The stomatal conductance model is under development.
-```bash
-import stomatal
-```
-### Initialize stomatal conductance models
-One stomatal conductance model is currently available: Buckley Mott Farquhar (BMF). Other three Ball Berry Leuning (BBL), Medlyn (MED), and Ball Woodrow Berry (BWB) are under development.
+Three stomatal conductance model is currently available: Buckley Mott Farquhar (BMF), Medlyn (MED), and Ball Woodrow Berry (BWB). The Ball Berry Leuning (BBL) model is under development.
 More details about these four models can be found at: https://baileylab.ucdavis.edu/software/helios/_stomatal_doc.html.
 
+Create a python file in the PhoTorch directory and import necessary packages.
+```bash
+import stomatal
+import pandas as pd
+import torch
+```
 ### Initialize the stomatal conductance data
 The data to be loaded should be:
 
@@ -171,6 +172,8 @@ scd = stomatal.initscdata(datasc)
 ### Initialize the BMF model and fit the parameters Emerson effect (Em), quantum yield of electron transport (i0), curvature factor (k), and intercept (b).
 ```bash
 scm = stomatal.BMF(scd)
+#scm = stomatal.BWB(scd) 
+#scm = stomatal.MED(scd)
 scm = stomatal.fit(scm, learnrate = 0.5, maxiteration =20000)
 ```
 ### Get the fitted and measured stomatal conductance

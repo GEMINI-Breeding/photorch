@@ -4,14 +4,13 @@ import torch
 class allparameters(nn.Module):
     def __init__(self):
         super(allparameters, self).__init__()
-
-        self.Ca = torch.tensor(420.0)
+        self.Ca = torch.tensor(400.0)
 
 class gsACi(nn.Module):
-    def __init__(self,gs):
+    def __init__(self,gs, allparams = allparameters()):
         super(gsACi, self).__init__()
         self.Ci = nn.Parameter(torch.ones(len(gs))*300)
-        self.Ca = torch.tensor(420.0)
+        self.Ca = allparams.Ca
         self.gs = gs
     def forward(self):
         An = self.gs*(self.Ca - self.Ci)
@@ -28,11 +27,11 @@ class lossA(nn.Module):
 
 # Ball Woodrow Berry
 class BWB(nn.Module):
-    def __init__(self, scd):
+    def __init__(self, scd, allparams = allparameters()):
         super(BWB, self).__init__()
         self.model_label = 'BWB'
         self.num = scd.num
-        self.Ca = torch.tensor(420.0)
+        self.Ca = allparams.Ca
         self.A = scd.A
         self.rh = scd.rh
         self.gs0 = nn.Parameter(torch.ones(self.num))
@@ -40,14 +39,14 @@ class BWB(nn.Module):
         self.scd = scd
         self.lengths = scd.lengths
     def forward(self):
-        gs0 = self.gs0[self.FGs]
-        a1 = self.a1[self.FGs]
-        gs = gs0 + a1 * self.A * self.rh / self.Ca
+        self.gs0_r = torch.repeat_interleave(self.gs0, self.lengths)
+        self.a1_r = torch.repeat_interleave(self.a1, self.lengths)
+        gs = self.gs0_r + self.a1_r * self.A * self.rh / self.Ca
         return gs
 
 # Ball Berry Leuning
 class BBL(nn.Module):
-    def __init__(self, scd):
+    def __init__(self, scd, allparams = allparameters()):
         super(BBL, self).__init__()
         self.model_label = 'BBL'
         self.num = scd.num
@@ -57,17 +56,17 @@ class BBL(nn.Module):
         self.gs0 = nn.Parameter(torch.ones(self.num))
         self.a1 = nn.Parameter(torch.ones(self.num))
         self.D0 = nn.Parameter(torch.ones(self.num))
-        self.Ca = torch.tensor(420.0)
+        self.Ca = allparams.Ca
     def forward(self):
-        gs0 = self.gs0[self.FGs]
-        a1 = self.a1[self.FGs]
-        D0 = self.D0[self.FGs]
-        gs = gs0 + a1 * self.A / (self.Ca - self.Gamma) / (1 + self.VPD / D0)
+        self.gs0_r = torch.repeat_interleave(self.gs0, self.lengths)
+        self.a1_r = torch.repeat_interleave(self.a1, self.lengths)
+        self.D0_r = torch.repeat_interleave(self.D0, self.lengths)
+        gs = self.gs0_r + self.a1_r * self.A / (self.Ca - self.Gamma) / (1 + self.VPD / self.D0_r)
         return gs
 
 # Medlyn et al.
 class MED(nn.Module):
-    def __init__(self, scd):
+    def __init__(self, scd, allparams = allparameters()):
         super(MED, self).__init__()
         self.model_label = 'MED'
         self.num = scd.num
@@ -75,7 +74,7 @@ class MED(nn.Module):
         self.VPD = scd.VPD
         self.gs0 = nn.Parameter(torch.ones(self.num))
         self.g1 = nn.Parameter(torch.ones(self.num))
-        self.Ca = torch.tensor(420.0)
+        self.Ca = allparams.Ca
         self.scd = scd
         self.lengths = scd.lengths
     def forward(self):
@@ -86,7 +85,7 @@ class MED(nn.Module):
 
 # Buckley Mott Farquhar
 class BMF(nn.Module):
-    def __init__(self, scd):
+    def __init__(self, scd, allparams = allparameters()):
         super(BMF, self).__init__()
         self.model_label = 'BMF'
         self.num = scd.num
