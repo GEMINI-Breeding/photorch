@@ -84,24 +84,24 @@ def run():
             try:
                 print('Stomatal conductance testing case: "BMF"')
                 scm = stomatal.BMF(scd)
-                scm = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
-                scm()
+                resultfit = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
+                resultfit.model()
             except:
                 raise ValueError('Error in running the stomatal conductance test: "BMF"')
         elif stomataltype == 'BWB':
             try:
                 print('Stomatal conductance testing case: "BWB"')
                 scm = stomatal.BWB(scd)
-                scm = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
-                scm()
+                resultfit = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
+                resultfit.model()
             except:
                 raise ValueError('Error in running the stomatal conductance test: "BWB"')
         elif stomataltype == 'MED':
             try:
                 print('Stomatal conductance testing case: "MED"')
                 scm = stomatal.MED(scd)
-                scm = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
-                scm()
+                resultfit = stomatal.fit(scm, learnrate=0.5, maxiteration=20, printout=False)
+                resultfit.model()
             except:
                 raise ValueError('Error in running the stomatal conductance test: "MED"')
 

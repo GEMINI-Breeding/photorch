@@ -51,8 +51,6 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000,
     recordweights = recordweights()
 
     for iter in range(maxiteration):
-        # if iter == weakconstiter and loss < 5:
-        #     criterion.weakconstiter = weakconstiter * 2
 
         optimizer.zero_grad()
 
@@ -77,15 +75,14 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000,
         if loss.item() < minloss and printout:
             print(f'Fitting stopped at iter {iter}')
             break
-    if printout:
-        print(f'Best loss at iter {best_iter}: {best_loss:.4f}')
-
-    fvcbm.load_state_dict(best_weights)
 
     end_time = time.time()
     elapsed_time = end_time - start_time
     if printout:
+        print(f'Best loss at iter {best_iter}: {best_loss:.4f}')
         print(f'Fitting time: {elapsed_time:.4f} seconds')
+    fvcbm.load_state_dict(best_weights)
+
     if recordweightsTF:
         modelresult_out = modelresult(fvcbm, loss_all, recordweights.allweights)
     else:

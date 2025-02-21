@@ -164,6 +164,7 @@ The data to be loaded should be:
 | 1       | 0.23| 29.03             | 49 | 2000  | 17.93 | 35.92|
 | 1       | 0.29| 20.51             | 50 | 2000  | 20.51 | 29.96|
 | 1       | 0.28| 11.77             | 49 | 2000  | 18.61 | 19.99|
+'A' is not necessary for BMF model.
 
 ```bash
 datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')

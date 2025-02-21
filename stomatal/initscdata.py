@@ -15,14 +15,20 @@ class initscdata():
         except:
             # add a new column 'FittingGroup' with all values equal to 1
             LCdata['FittingGroup'] = 1
-            if printout:
-                print('Warning: FittingGroup not found in the data, adding a FittingGroup column with all values equal to 1')
+            # if printout:
+            #     print('Warning: FittingGroup not found in the data, adding a FittingGroup column with all values equal to 1')
 
         self.IDs = np.array([])
         self.FGs_idx = np.array([])
         self.FGs_name = np.array([])
-
-        self.A = torch.empty((0,))  # net photosynthesis
+        self.hasA = True
+        # check if LCdata has 'A' column
+        if 'A' not in LCdata.columns:
+            self.hasA = False
+            if printout:
+                print('Warning: A column not found in the data')
+        else:
+            self.A = torch.empty((0,))  # net photosynthesis
         self.Q = torch.empty((0,)) # PPFD
         # self.Ci = torch.empty((0,)) # intercellular CO2
         self.Tleaf = torch.empty((0,)) # leaf temperature
@@ -40,9 +46,11 @@ class initscdata():
             id = IDs[i]
             indices = np.where(LCdata[idname] == id)[0]
 
-            # smooth A values where Ci > 500
-            A = LCdata['A'].iloc[indices].to_numpy()
+            if self.hasA:
+                A = LCdata['A'].iloc[indices].to_numpy()
+                self.A = torch.cat((self.A, torch.tensor(A)))
             # Ci = LCdata['Ci'].iloc[indices].to_numpy()
+            # self.Ci = torch.cat((self.Ci, torch.tensor(Ci)))
 
             # sorted_indices = np.argsort(Ci)
             # A = A[sorted_indices]
@@ -51,7 +59,7 @@ class initscdata():
 
             # if there are Ci less than 0
             # if np.sum(Ci < 0) > 0 and printout:
-            #     print('Warning: Found Ci < 0 in ID:', id, ', removing this A/Ci curve')
+            #     print('Warning: Found Ci < 0 in ID:', id, ', removing this data')
             #     continue
 
             self.IDs = np.append(self.IDs, id)
@@ -61,9 +69,7 @@ class initscdata():
             # fg_idx = np.where(FGs_uq == fg)[0][0]
             # self.FGs_idx = np.append(self.FGs_idx, fg_idx)
 
-            self.A = torch.cat((self.A, torch.tensor(A)))
             self.Q = torch.cat((self.Q, torch.tensor(LCdata['Qin'].iloc[indices].to_numpy())))
-            # self.Ci = torch.cat((self.Ci, torch.tensor(Ci)))
 
             self.Tleaf = torch.cat((self.Tleaf,torch.tensor(LCdata['Tleaf'].iloc[indices].to_numpy() + 273.15)))
 
@@ -92,7 +98,7 @@ class initscdata():
 
         if printout:
             # print done reading data information
-            print('Done reading:', self.num, 'gsw curves;', len(self.A), 'data points')
+            print('Done reading:', self.num, 'gsw curves;', len(self.VPD), 'data points')
 
     def todevice(self, device: torch.device = 'cpu'):
         self.device = device
