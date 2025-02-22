@@ -175,7 +175,8 @@ scd = stomatal.initscdata(datasc)
 scm = stomatal.BMF(scd)
 #scm = stomatal.BWB(scd) 
 #scm = stomatal.MED(scd)
-scm = stomatal.fit(scm, learnrate = 0.5, maxiteration =20000)
+fitresult = stomatal.fit(scm, learnrate = 0.5, maxiteration =20000)
+scm = fitresult.model
 ```
 ### Get the fitted and measured stomatal conductance
 ```bash
