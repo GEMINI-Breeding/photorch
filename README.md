@@ -103,7 +103,7 @@ fvcbm = fvcb.model(lcd, LightResp_type = 0, TempResp_type = 1, onefit = False, f
 ```
 ### Fit A/Ci curves
 ```bash
-fitresult = fvcb.fit(fvcbm, learn_rate= 0.08, device=device_fit, maxiteration = 20000, minloss= 1, recordweightsTF=False)
+fitresult = fvcb.fit(fvcbm, learn_rate= 0.08, maxiteration = 20000, minloss= 1, recordweightsTF=False)
 fvcbm = fitresult.model
 ```
 ### Get fitted parameters by ID

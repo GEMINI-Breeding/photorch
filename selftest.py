@@ -45,7 +45,7 @@ def run():
                                     lcd.todevice(idevice)
 
                                 fvcbmMAGIC043 = fvcb.model(lcd, LightResp_type = lighttype, TempResp_type = temptype, onefit = onef, fitgm= True, fitgamma=KGfit, fitKo=KGfit, fitKc=KGfit, fitRd=Rdfit, fitRdratio=~Rdfit, printout=False)
-                                resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, device=idevice, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=True, printout=False,weakconstiter=5)
+                                resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=True, printout=False,weakconstiter=5)
                                 resultfit.model()
                                 # check if all fit parameters are not nan
                             except:
@@ -58,7 +58,7 @@ def run():
         lcd = fvcb.initLicordata(pdlMAGIC043, preprocess=True, printout=False)
         lcd.todevice(idevice)
         fvcbmMAGIC043 = fvcb.model(lcd, LightResp_type=0, TempResp_type=0, printout=False)
-        resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, device=idevice, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=False, printout=False)
+        resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=False, printout=False)
         resultfit.model()
     except:
         raise ValueError('Error in running the FvCB test: Original data without "FittingGroup", "Qin" and "Tleaf".')
@@ -68,7 +68,7 @@ def run():
         allparams = fvcb.allparameters()
         allparams.alphaG = torch.tensor([0.1]).to(idevice)
         fvcbmMAGIC043 = fvcb.model(lcd, LightResp_type=0, TempResp_type=0, printout=False, allparams=allparams)
-        resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, device=idevice, maxiteration=10, minloss=1, recordweightsTF=True, fitcorr=False, printout=False)
+        resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, maxiteration=10, minloss=1, recordweightsTF=True, fitcorr=False, printout=False)
         resultfit.model()
     except:
         raise ValueError('Error in running the FvCB test: Reset parameters and record weights.')

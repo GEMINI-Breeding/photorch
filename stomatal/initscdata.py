@@ -75,9 +75,9 @@ class initscdata():
 
             self.gsw = torch.cat((self.gsw, torch.tensor(LCdata['gsw'].iloc[indices].to_numpy())))
             # self.Ca = torch.cat((self.Ca, torch.tensor(LCdata['Ca'].iloc[indices].to_numpy())))
-            self.rh = torch.cat((self.rh, torch.tensor(LCdata['RH'].iloc[indices].to_numpy() / 100)))
+            self.rh = torch.cat((self.rh, torch.tensor(LCdata['RHcham'].iloc[indices].to_numpy() / 100)))
             # self.D = torch.cat((self.D, torch.tensor(LCdata['VPDleaf'].iloc[indices].to_numpy() / LCdata['Pa'].iloc[indices].to_numpy() * 1000)))
-            self.VPD = torch.cat((self.VPD, torch.tensor(LCdata['VPDleaf_mmolmol-1'].iloc[indices].to_numpy())))
+            self.VPD = torch.cat((self.VPD, torch.tensor(LCdata['VPDleaf'].iloc[indices].to_numpy())))
 
 
             sample_indices = torch.cat((sample_indices, idx))
