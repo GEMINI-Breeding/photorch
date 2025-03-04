@@ -3,6 +3,7 @@ import torch
 
 class initscdata():
     def __init__(self, LCdata, printout = True):
+        LCdata = LCdata[LCdata['gsw'] >= 0].reset_index(drop=True)
         idname = 'CurveID'
         all_IDs = LCdata[idname].values
         self.device = 'cpu'
@@ -26,7 +27,7 @@ class initscdata():
         if 'A' not in LCdata.columns:
             self.hasA = False
             if printout:
-                print('Warning: A column not found in the data')
+                print('Warning: Net photosynthethis "A" column not found in the data')
         else:
             self.A = torch.empty((0,))  # net photosynthesis
         self.Q = torch.empty((0,)) # PPFD
@@ -68,16 +69,25 @@ class initscdata():
             # # get the idex of the fg in FGs_uq
             # fg_idx = np.where(FGs_uq == fg)[0][0]
             # self.FGs_idx = np.append(self.FGs_idx, fg_idx)
-
-            self.Q = torch.cat((self.Q, torch.tensor(LCdata['Qin'].iloc[indices].to_numpy())))
+            leaf_PAR_absorptivity = 0.85
 
             self.Tleaf = torch.cat((self.Tleaf,torch.tensor(LCdata['Tleaf'].iloc[indices].to_numpy() + 273.15)))
 
             self.gsw = torch.cat((self.gsw, torch.tensor(LCdata['gsw'].iloc[indices].to_numpy())))
             # self.Ca = torch.cat((self.Ca, torch.tensor(LCdata['Ca'].iloc[indices].to_numpy())))
-            self.rh = torch.cat((self.rh, torch.tensor(LCdata['RH'].iloc[indices].to_numpy() / 100)))
+            
+            if 'RHcham' in LCdata.columns:
+                self.rh = torch.cat((self.rh, torch.tensor(LCdata['RHcham'].iloc[indices].to_numpy() / 100)))
+                self.Q = torch.cat((self.Q, torch.tensor(LCdata['Qin'].iloc[indices].to_numpy()*leaf_PAR_absorptivity)))
+
+            elif 'rh_r' in LCdata.columns:
+                self.rh = torch.cat((self.rh, torch.tensor(LCdata['rh_r'].iloc[indices].to_numpy() / 100)))
+                self.Q = torch.cat((self.Q, torch.tensor(LCdata['Qamb'].iloc[indices].to_numpy()*leaf_PAR_absorptivity)))
+
+            else:
+                raise Exception("No valid relative humidity column header found. Accepted headers are 'RHcham' and 'rh_r'.")
             # self.D = torch.cat((self.D, torch.tensor(LCdata['VPDleaf'].iloc[indices].to_numpy() / LCdata['Pa'].iloc[indices].to_numpy() * 1000)))
-            self.VPD = torch.cat((self.VPD, torch.tensor(LCdata['VPDleaf_mmolmol-1'].iloc[indices].to_numpy())))
+            self.VPD = torch.cat((self.VPD, torch.tensor(LCdata['VPDleaf'].iloc[indices].to_numpy() * 1000/101.3))) # kPa to mmol/mol
 
 
             sample_indices = torch.cat((sample_indices, idx))

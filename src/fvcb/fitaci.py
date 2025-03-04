@@ -1,8 +1,7 @@
 # PhoTorch
 # A/Ci curve optimizer
 import torch
-import fvcb.fvcbmodels as initM
-# import fvcb.initphotodata as initD
+import src.fvcb.fvcbmodels as initM
 import time
 
 # get rmse loss
@@ -16,9 +15,9 @@ class modelresult():
         self.losses = loss_all
         self.recordweights = allweights
 
-def run(fvcbm:initM.FvCB, learn_rate = 0.6, device= 'cpu', maxiteration = 20000, minloss = 3, recordweightsTF = False, fitcorr = False, ApCithreshold = 600, weakconstiter = 10000, printout = True):
+def run(fvcbm:initM.FvCB, learn_rate = 0.6, maxiteration = 20000, minloss = 3, recordweightsTF = False, fitcorr = False, ApCithreshold = 600, weakconstiter = 10000, printout = True):
     start_time = time.time()
-
+    device = fvcbm.lcd.device
     if device == 'cuda':
         device = torch.device(device)
         fvcbm.to(device)
@@ -175,6 +174,3 @@ def getValidTPU(fvcbm: initM.FvCB):
             mask_tpu[i] = False
 
     return mask_tpu
-
-
-

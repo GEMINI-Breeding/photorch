@@ -1,17 +1,16 @@
-import fvcb
-import stomatal
+import src.fvcb as fvcb
+import src.stomatal as stomatal
 import selftest
 import pandas as pd
-import torch
 import matplotlib.pyplot as plt
 
-# selftest.run() # Check if all models are working
+#selftest.run() # Check if all models are working
 
 # FvCB model fitting
-dftest = pd.read_csv('exampledata/dfMAGIC043_lr.csv')
+dftest = pd.read_csv('data/tests/dfMAGIC043_lr.csv')
 lcd = fvcb.initLicordata(dftest, preprocess=True, lightresp_id = [118])
 fvcbm = fvcb.model(lcd, LightResp_type = 2, TempResp_type = 0, onefit = False)
-fitresult = fvcb.fit(fvcbm, learn_rate= 0.06, device='cpu', maxiteration = 20000, minloss= 1, fitcorr=False) # If temp type is 0, do not set fitcorr to True
+fitresult = fvcb.fit(fvcbm, learn_rate= 0.06, maxiteration = 20000, minloss= 1, fitcorr=False) # If temp type is 0, do not set fitcorr to True
 fvcbm = fitresult.model
 fvcbm.eval()
 A_fit, Ac_fit, Aj_fit, Ap_fit = fvcbm()
@@ -29,6 +28,8 @@ for id in lcd.IDs:
     plt.plot(lcd.Ci[indices_id],A_id.detach().numpy())
     plt.plot(lcd.Ci[indices_id],lcd.A[indices_id],'.')
 plt.title('Fitted A/Ci curves')
+plt.xlabel('Ci ($\mu$mol mol$^{-1}$)')
+plt.ylabel('A ($\mu$mol m$^{-2}$ s$^{-1}$)')
 plt.show()
 #
 plt.figure()
@@ -40,19 +41,23 @@ plt.plot(lcd.Q[indices_id],Ac_id.detach().numpy())
 plt.plot(lcd.Q[indices_id],Aj_id.detach().numpy())
 plt.plot(lcd.Q[indices_id],lcd.A[indices_id],'.')
 plt.title('Fitted Light response A/Q curve for ID 118')
+plt.xlabel('Q ($\mu$mol m$^{-2}$ s$^{-1}$)')
+plt.ylabel('A ($\mu$mol m$^{-2}$ s$^{-1}$)')
 plt.show()
 
 # Stomatal model fitting
-datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')
+datasc = pd.read_csv('data/tests/steadystate_stomatalconductance.csv')
 scd = stomatal.initscdata(datasc)
 scm = stomatal.BMF(scd)
-scm = stomatal.fit(scm, learnrate = 0.5, maxiteration =20000)
-gsw = scm()
+scm = stomatal.fit(scm, learnrate = 0.5, maxiteration = 20000)
+gsw = scm.model()
 gsw_mea = scd.gsw
 
 plt.figure()
 plt.plot(gsw_mea)
 plt.plot(gsw.detach().numpy(), '.')
-plt.title('Fitted gsw')
-plt.legend(['Measured gsw', 'Fitted gsw'])
+plt.title('Model Fit of Steady-state gsw')
+plt.legend(['Measured gsw', 'Modeled gsw'])
+plt.xlabel('observation')
+plt.ylabel('g$_{sw}$ (mol m$^{-2}$ s$^{-1}$)')
 plt.show()
