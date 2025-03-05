@@ -1,11 +1,11 @@
 import fvcb
 import stomatal
-import selftest
+import util
 import pandas as pd
 import torch
 import matplotlib.pyplot as plt
 
-# selftest.run() # Check if all models are working
+# util.selftest() # Check if all models are working
 
 # FvCB model fitting
 dftest = pd.read_csv('data/dfMAGIC043_lr.csv')
