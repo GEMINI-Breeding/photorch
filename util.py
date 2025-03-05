@@ -2,9 +2,8 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from src.fvcb.evaluate import evaluateFvCB
-from src.stomatal.evaluate import evaluateBMF
+from fvcb.evaluate import evaluateFvCB
+from stomatal.evaluate import evaluateBMF
 
 def computeR2(obs, pred):
     return 1.0 - np.sum((obs - pred) ** 2) / np.sum((obs - np.mean(obs)) ** 2)
