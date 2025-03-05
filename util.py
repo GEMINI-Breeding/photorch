@@ -398,3 +398,19 @@ def plotBMFModelFit(species,variety,parameterPath,dataPath):
         
     plt.savefig("results/figures/"+species+variety+"_BMF_Plot_R2.png")
     plt.show()
+
+def convert_params_to_buffers(dlmodel):
+    # Loop through all modules and collect parameters to be modified
+    for module in dlmodel.modules():
+        # Collect all parameter names and their corresponding values in a list
+        params_to_convert = [(name, param) for name, param in module.named_parameters(recurse=False)]
+
+        # Iterate through the collected parameters and modify them
+        for name, param in params_to_convert:
+            # Detach and clone the parameter
+            buffer_param = param.detach().clone()
+            # Delete the parameter from the module
+            del module._parameters[name]
+            # Register the parameter as a buffer in the module
+            module.register_buffer(name, buffer_param)
+    return dlmodel
