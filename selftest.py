@@ -4,7 +4,7 @@ import stomatal
 import fvcb
 def run():
     device_test = ['cpu', 'cuda']
-    pathlcddfs = 'exampledata/dfMAGIC043_lr.csv'
+    pathlcddfs = 'data/dfMAGIC043_lr.csv'
     pdlMAGIC043 = pd.read_csv(pathlcddfs)
     lighttypes = [2, 1, 0]
     temptypes = [0, 1, 2]
@@ -76,7 +76,7 @@ def run():
     stomatallabels = ['BMF','BWB','MED']
     for stomataltype in stomatallabels:
         try:
-            datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')
+            datasc = pd.read_csv('data/steadystate_stomatalconductance.csv')
             scd = stomatal.initscdata(datasc, printout=False)
         except:
             raise ValueError('Error in running the stomatal conductance test: Initialization of stomatal data failed.')

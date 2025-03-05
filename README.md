@@ -14,7 +14,12 @@ pip install scipy
 pip install pandas
 ```
 
-**Next, download all the files and directories, and try running the examples in the testphotorch.py file!**
+**Next, download the repository, and try running the examples in the testphotorch.py file.**
+
+## Repository download
+```bash
+git clone https://github.com/GEMINI-Breeding/photorch.git
+```
 
 ## 1. FvCB model usage
 Create a python file in the PhoTorch directory and import necessary packages.
@@ -40,7 +45,7 @@ The data to be loaded should be:
 | 2       | 1            | 700 | 55 | 2000 | 30    |
 
 ```bash
-dftest = pd.read_csv('exampledata/dfMAGIC043_lr.csv')
+dftest = pd.read_csv('data/dfMAGIC043_lr.csv')
 # remove the rows with negative A values
 dftest = dftest[dftest['A'] > 0]
 ```
@@ -168,7 +173,7 @@ The data to be loaded should be:
 'A' is not necessary for BMF model.
 
 ```bash
-datasc = pd.read_csv('exampledata/steadystate_stomatalconductance.csv')
+datasc = pd.read_csv('data/steadystate_stomatalconductance.csv')
 scd = stomatal.initscdata(datasc)
 ```
 ### Initialize the BMF model and fit the parameters Emerson effect (Em), quantum yield of electron transport (i0), curvature factor (k), and intercept (b).
