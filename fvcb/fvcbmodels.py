@@ -517,8 +517,10 @@ class Loss(nn.Module):
         # penalty that Vcmax25 is lower than 20
         if fvc_model.curvenum > 1:
             loss += torch.mean(self.relu(20 - fvc_model.Vcmax25))
+            loss += torch.sum(self.relu(- fvc_model.Jmax25))
         else:
             loss += self.relu(20 - fvc_model.Vcmax25)[0] * 0.2
+            loss += self.relu(- fvc_model.Jmax25)[0]
 
         if fvc_model.fitRd:
             if fvc_model.curvenum > 1:
