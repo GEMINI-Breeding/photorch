@@ -1,8 +1,7 @@
 # PhoTorch
 # A/Ci curve optimizer
 import torch
-import fvcb.fvcbmodels as initM
-# import fvcb.initphotodata as initD
+import photorch.src.fvcb.fvcbmodels as initM
 import time
 
 # get rmse loss
@@ -30,7 +29,7 @@ def run(fvcbm:initM.FvCB, learn_rate = 0.6, maxiteration = 20000, minloss = 3, r
     optimizer = torch.optim.Adam(fvcbm.parameters(), lr=learn_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size= 5000, gamma=0.8)
 
-    best_loss = 100000
+    best_loss = 1e12
 
     best_weights = fvcbm.state_dict()
     best_iter = 0
@@ -175,6 +174,3 @@ def getValidTPU(fvcbm: initM.FvCB):
             mask_tpu[i] = False
 
     return mask_tpu
-
-
-

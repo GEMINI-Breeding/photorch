@@ -1,5 +1,5 @@
 import torch
-import stomatal.stomatalmodels as stomat
+import photorch.src.stomatal.stomatalmodels as stomat
 import time
 
 def getACi(fvcbmtt, gsw, learnrate = 2, maxiteration = 8000, minloss = 1e-10):

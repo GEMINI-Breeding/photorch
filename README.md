@@ -12,6 +12,7 @@ pip install torch
 pip install numpy
 pip install scipy
 pip install pandas
+pip install matplotlib
 ```
 
 **Next, download the repository, and try running the examples in the testphotorch.py file.**
@@ -20,12 +21,16 @@ pip install pandas
 ```bash
 git clone https://github.com/GEMINI-Breeding/photorch.git
 ```
+or 
+```bash
+pip install photorch
+```
 
 ## 1. FvCB model usage
 Create a python file in the PhoTorch directory and import necessary packages.
 
 ```bash
-import fvcb
+from photorch import *
 import pandas as pd
 import torch
 ```
@@ -46,8 +51,6 @@ The data to be loaded should be:
 
 ```bash
 dftest = pd.read_csv('data/dfMAGIC043_lr.csv')
-# remove the rows with negative A values
-dftest = dftest[dftest['A'] > 0]
 ```
 ### Initialize the data
 Then, specify the ID of the light response curve. If there is no light response curve in the dataset, ignore it (default is None).
@@ -144,6 +147,67 @@ Ac_id = Ac[indices_id]
 ```bash
 A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[id_index])
 ```
+
+### A Notebook Interface for Routine Single Group Fitting, Plotting, and Evaluating
+For routine fitting of single fitting groups, an easy to use jupyter notebook is available. First, install jupyterlab with
+```bash
+pip install jupyterlab
+```
+Once installed, open a terminal window, traverse to your PhoTorch directory and open the notebook with 
+```bash 
+jupyter-lab PhotosynthesisFitting.ipynb
+```
+which should open the notebook and the file directory in an interface using your default web browser. From here, one can easily change model settings in the User Settings section of each code block. The first block will process your data (compile all response curves) and the second block with fit the processed data with PhoTorch.
+
+```python
+# Process ACi Data and Verify the Printed Curves are Those Desired to Fit
+
+################# User Settings #################
+
+fitting_group_folder_path = "photorch/data/fvcb/curves/iceberg"
+species_to_fit = "Iceberg"
+species_variety = "Calmar"
+
+#################################################
+from photorch.src.util import *
+
+compiledDataPath = compileACiFiles(fitting_group_folder_path)
+```
+```python
+# Fit Compiled Data to FvCB Model using PhoTorch, Save Parameters, and Plot Results
+
+######### User Settings ##########
+LightResponseType = 2
+TemperatureResponseType = 2
+Fitgm = False
+FitGamma = False
+FitKc = False
+FitKo = False
+saveParameters = True
+plotResultingFit = True
+#### Advanced Hyper Parameters ####
+learningRate = 0.08
+iterations = 10000
+###################################
+```
+
+The file structure is used in the processing and plotting pipeline so familiarize yourself with it. Data for the FvCB model fitting is housed under "data/fvcb/curves/{FittingGroup}" for the response curves, and "data/fvcb/survey{FittingGroup}" for any auxillary survey measurements. 
+E.g.
+```bash
+data/fvcb/curves/iceberg/
+```
+The {FittingGroup}s are species, varieties, or any collection of data used to fit one set of parameters with. The {FittingGroup} folder expects raw LI-6800 ASCII files (without extensions) that are output alongside the optional .xlsx files (which pandas currently cannot import). The processing step converts these raw files to .txt before extracting and compiling the curves. The species_to_fit (required) and species_variety (can be left as an empty string, $``"$) variables are just to name the saved parameters and plots, and are not required to match the path given.
+
+Parameters will optionally be saved to 
+
+```bash
+results/parameters/{species_to_fit}{species_variety}_FvCB_Parameters.csv
+```
+and figures will optionally be saved to 
+```bash
+results/figures/{species_to_fit}{species_variety}_FvCB_{figure_name}.png
+```
+The normalization of response curves from different leaves using survey data is currently under development.
 ***
 
 ## 2. Stomatal conductance model usage
@@ -205,6 +269,38 @@ i0_id = scm.i0[id_index]
 k_id = scm.k[id_index]
 b_id = scm.b[id_index]
 ```
+
+### A Notebook Interface for Routine Single Group Fitting, Plotting, and Evaluating
+For routine fitting of single fitting groups, an easy to use jupyter notebook is available. First, install jupyterlab with
+```bash
+pip install jupyterlab
+```
+Once installed, open a terminal window, traverse to your PhoTorch directory and open the notebook with 
+```bash 
+jupyter-lab PhotosynthesisFitting.ipynb
+```
+which should open the notebook and the file directory in an interface using your default web browser. From here, one can easily change model settings in the User Settings section of the code block.
+
+```python
+# Process Stomatal Data and Observe the Model Fit
+################# User Settings #################
+
+fitting_group_folder_path = "photorch/data/stomatal/survey/iceberg/Iceberg_poro"
+species_to_fit = "Iceberg"
+species_variety = "Calmar"
+
+#################################################
+```
+Data of steady-state response curves or non-steady-state survey measurements can be fit to and are housed in their respective directories
+```bash
+data/stomatal/curves/{FittingGroup}
+```
+```bash
+data/stomatal/survey/{FittingGroup}
+```
+The species_to_fit (required) and species_variety (can be left as an empty string, $``"$) variables are just to name the saved parameters and plots, and are not required to match the path given for the input data.
+
+The inclusive of the use of stomatal models within this notebook interface is under development, but is of course available to program manually with PhoTorch.
   
 ## 3. PROSPECT-X model usage
 The PROSPECT-X model is under development.

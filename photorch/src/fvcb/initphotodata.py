@@ -90,11 +90,11 @@ class initLicordata():
     def __init__(self, LCdata, preprocess = True, lightresp_id = None, smoothingwindow = 10, up_treshold=0.06, down_treshold=0.06, printout = True):
 
         # check if LCdata contains negative A values
-        numnegA = sum(LCdata['A'] < 0)
-        if printout:
-            if numnegA > 0:
-                print(f'Warning: Found {numnegA} negative A values in the data, removing corresponding rows')
-        LCdata = LCdata[LCdata['A'] > 0]
+        # numnegA = sum(LCdata['A'] < 0)
+        # if printout:
+        #     if numnegA > 0:
+        #         print(f'Warning: Found {numnegA} negative A values in the data, removing corresponding rows')
+        # LCdata = LCdata[LCdata['A'] > 0]
         idname = 'CurveID'
         all_IDs = LCdata[idname].values
         self.device = 'cpu'

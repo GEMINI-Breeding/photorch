@@ -79,7 +79,7 @@ class LightResponse(nn.Module):
             if printout:
                 print('Light response type 1: alpha will be fitted.')
             self.alpha = nn.Parameter(torch.ones(self.num_FGs) * self.allparams.alpha)
-            self.alpha = nn.Parameter(self.alpha)
+            # self.alpha = nn.Parameter(self.alpha)
             self.getJ = self.Function1
 
         elif self.type == 2:
@@ -459,6 +459,9 @@ class FvCB(nn.Module):
         ac = self.Gamma_Cc * wc - self.Rd
         aj = self.Gamma_Cc * wj - self.Rd
         ap = self.Gamma_Cc * wp - self.Rd
+        # replace ap with 0 if ap < 0
+        ap = torch.where(ap < 0, torch.tensor(100.0).to(self.lcd.device), ap)
+
         a = torch.min(torch.stack((ac, aj, ap)), dim=0).values
 
         return a, ac, aj, ap
@@ -482,6 +485,8 @@ class correlationloss():
 
         cost = torch.min(cost, torch.tensor(target_r))
         return (target_r - cost)
+
+
 
 class Loss(nn.Module):
     def __init__(self, lcd, fitApCi: int = 500, fitCorrelation: bool = True, weakconstiter: int = 10000):
@@ -508,7 +513,6 @@ class Loss(nn.Module):
 
         # Reconstruction loss
         loss = self.mse(An_o, self.A_r) * 10
-
         if fvc_model.curvenum > 6 and self.fitCorrelation:
             corrloss = correlationloss(fvc_model.Vcmax25[self.mask_nolightresp])
             # make correlation between Jmax25 and Vcmax25 be 0.7
@@ -603,6 +607,8 @@ class Loss(nn.Module):
         indices_closest = torch.tensor([]).long().to(Aj_o.device)
         ls_Aj = torch.tensor([]).float().to(Aj_o.device)
         # ls_Ac = torch.tensor([]).float()
+
+
         for i in range(self.num_IDs):
 
             index_start = self.indices_start[i]
@@ -625,7 +631,7 @@ class Loss(nn.Module):
             ls_Aj_i = torch.sum(Ajc_o_diff[index_start:index_end])
             # penalty_inter = penalty_inter + torch.clamp(5 - ls_Aj_i, min=0)
             ls_Aj = torch.cat((ls_Aj, ls_Aj_i.unsqueeze(0)))
-            
+
             # ls_Ac_i = torch.sum(Acj_o_diff[index_start:index_end])
             # penalty_inter = penalty_inter + torch.clamp(5 - ls_Ac_i, min=0)
             # ls_Ac = torch.cat((ls_Ac, ls_Ac_i.unsqueeze(0)))
@@ -671,3 +677,5 @@ class Loss(nn.Module):
 
         loss = loss + penalty_inter
         return loss
+
+

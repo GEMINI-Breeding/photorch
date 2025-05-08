@@ -2,10 +2,10 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from fvcb.evaluate import evaluateFvCB
-from stomatal.evaluate import evaluateBMF
-import stomatal
-import fvcb
+from photorch.src.fvcb.evaluate import evaluateFvCB
+from photorch.src.stomatal.evaluate import evaluateBMF
+from photorch.src import stomatal
+from photorch.src import fvcb
 import torch
 
 def computeR2(obs, pred):
@@ -115,43 +115,43 @@ def normalizeACiCurveGroupsWithSurvey(curveGroupPaths,surveyDataPath):
     # all_data.loc[all_data.CurveID<=7,"A"] = all_data.loc[all_data.CurveID<=7,"A"]+10
     # print(all_data.A.max())
 
-def printFvCBParameters(fvcb,LightResponseType=1,TemperatureResponseType=2,Fitgm=False,FitGamma=False,FitKc=False,FitKo=False):
-    print(f"Vcmax25 = {fvcb.Vcmax25[0]}")
-    print(f"Jmax25 = {fvcb.Jmax25[0]}")
-    print(f"Vcmax_dHa = {fvcb.TempResponse.dHa_Vcmax[0]}")
-    print(f"Jmax_dHa = {fvcb.TempResponse.dHa_Jmax[0]}")
-    print(f"alpha = {fvcb.LightResponse.alpha[0]}")
+def printFvCBParameters(fvcbm,LightResponseType=1,TemperatureResponseType=2,Fitgm=False,FitGamma=False,FitKc=False,FitKo=False):
+    print(f"Vcmax25 = {fvcbm.Vcmax25[0]}")
+    print(f"Jmax25 = {fvcbm.Jmax25[0]}")
+    print(f"Vcmax_dHa = {fvcbm.TempResponse.dHa_Vcmax[0]}")
+    print(f"Jmax_dHa = {fvcbm.TempResponse.dHa_Jmax[0]}")
+    print(f"alpha = {fvcbm.LightResponse.alpha[0]}")
     if(LightResponseType==2):
-        print(f"theta = {fvcb.LightResponse.theta[0]}")
+        print(f"theta = {fvcbm.LightResponse.theta[0]}")
     if(Fitgm):
-        print(f"gm = {fvcb.gm[0]}")
+        print(f"gm = {fvcbm.gm[0]}")
     if(FitGamma):
-        print(f"Gamma25 = {fvcb.Gamma25[0]}")
+        print(f"Gamma25 = {fvcbm.Gamma25[0]}")
     if(FitKc):
-        print(f"Kc = {fvcb.Kc25[0]}")
+        print(f"Kc = {fvcbm.Kc25[0]}")
     if(FitKo):
-        print(f"Ko = {fvcb.Ko25[0]}")
+        print(f"Ko = {fvcbm.Ko25[0]}")
 
-def saveFvCBParametersToFile(species,var,fvcb,LightResponseType=1,TemperatureResponseType=2,Fitgm=False,FitGamma=False,FitKc=False,FitKo=False):
-    savepath = "results/parameters/"+species+var+"_FvCB_Parameters.csv"
+def saveFvCBParametersToFile(species,var,fvcbm,LightResponseType=1,TemperatureResponseType=2,Fitgm=False,FitGamma=False,FitKc=False,FitKo=False):
+    savepath = "photorch/results/parameters/"+species+var+"_FvCB_Parameters.csv"
     if(LightResponseType==2 & TemperatureResponseType==2):
         vars = ["species","Vcmax25","Jmax25","TPU25","Rd25","alpha","theta","Vcmax_dHa","Vcmax_Topt","Vcmax_dHd","Jmax_dHa","Jmax_Topt","Jmax_dHd","TPU_dHa","TPU_Topt","TPU_dHd","Rd_dHa","Gamma25","Gamma_dHa","Kc25","Kc_dHa","Ko25","Ko_dHa","O"]
-        vals = [species,fvcb.Vcmax25.item(),fvcb.Jmax25.item(),fvcb.TPU25.item(),fvcb.Rd25.item(),fvcb.LightResponse.alpha.item(),fvcb.LightResponse.theta.item(),fvcb.TempResponse.dHa_Vcmax.item(),fvcb.TempResponse.Topt_Vcmax.item(),fvcb.TempResponse.dHd_Vcmax.item(),fvcb.TempResponse.dHa_Jmax.item(),fvcb.TempResponse.Topt_Jmax.item(),fvcb.TempResponse.dHd_Jmax.item(),fvcb.TempResponse.dHa_TPU.item(),fvcb.TempResponse.Topt_TPU.item(),fvcb.TempResponse.dHd_TPU.item(),fvcb.TempResponse.dHa_Rd.item(),fvcb.Gamma25.item(),fvcb.TempResponse.dHa_Gamma.item(),fvcb.Kc25.item(),fvcb.TempResponse.dHa_Kc.item(),fvcb.Ko25.item(),fvcb.TempResponse.dHa_Ko.item(),fvcb.Oxy.item()]
+        vals = [species,fvcbm.Vcmax25.item(),fvcbm.Jmax25.item(),fvcbm.TPU25.item(),fvcbm.Rd25.item(),fvcbm.LightResponse.alpha.item(),fvcbm.LightResponse.theta.item(),fvcbm.TempResponse.dHa_Vcmax.item(),fvcbm.TempResponse.Topt_Vcmax.item(),fvcbm.TempResponse.dHd_Vcmax.item(),fvcbm.TempResponse.dHa_Jmax.item(),fvcbm.TempResponse.Topt_Jmax.item(),fvcbm.TempResponse.dHd_Jmax.item(),fvcbm.TempResponse.dHa_TPU.item(),fvcbm.TempResponse.Topt_TPU.item(),fvcbm.TempResponse.dHd_TPU.item(),fvcbm.TempResponse.dHa_Rd.item(),fvcbm.Gamma25.item(),fvcbm.TempResponse.dHa_Gamma.item(),fvcbm.Kc25.item(),fvcbm.TempResponse.dHa_Kc.item(),fvcbm.Ko25.item(),fvcbm.TempResponse.dHa_Ko.item(),fvcbm.Oxy.item()]
         outdf = pd.DataFrame([vals],columns=vars)
         outdf.to_csv(savepath,index=False)
     elif(LightResponseType==2 & TemperatureResponseType==1):
         vars = ["species","Vcmax25","Jmax25","TPU25","Rd25","alpha","theta","Vcmax_dHa","Vcmax_Topt","Vcmax_dHd","Jmax_dHa","Jmax_Topt","Jmax_dHd","TPU_dHa","TPU_Topt","TPU_dHd","Rd_dHa","Gamma25","Gamma_dHa","Kc25","Kc_dHa","Ko25","Ko_dHa","O"]
-        vals = [species,fvcb.Vcmax25.item(),fvcb.Jmax25.item(),fvcb.TPU25.item(),fvcb.Rd25.item(),fvcb.LightResponse.alpha.item(),fvcb.LightResponse.theta.item(),fvcb.TempResponse.dHa_Vcmax.item(),99999,1,fvcb.TempResponse.dHa_Jmax.item(),99999,1,fvcb.TempResponse.dHa_TPU.item(),99999,1,fvcb.TempResponse.dHa_Rd.item(),fvcb.Gamma25.item(),fvcb.TempResponse.dHa_Gamma.item(),fvcb.Kc25.item(),fvcb.TempResponse.dHa_Kc.item(),fvcb.Ko25.item(),fvcb.TempResponse.dHa_Ko.item(),fvcb.Oxy.item()]
+        vals = [species,fvcbm.Vcmax25.item(),fvcbm.Jmax25.item(),fvcbm.TPU25.item(),fvcbm.Rd25.item(),fvcbm.LightResponse.alpha.item(),fvcbm.LightResponse.theta.item(),fvcbm.TempResponse.dHa_Vcmax.item(),99999,1,fvcbm.TempResponse.dHa_Jmax.item(),99999,1,fvcbm.TempResponse.dHa_TPU.item(),99999,1,fvcbm.TempResponse.dHa_Rd.item(),fvcbm.Gamma25.item(),fvcbm.TempResponse.dHa_Gamma.item(),fvcbm.Kc25.item(),fvcbm.TempResponse.dHa_Kc.item(),fvcbm.Ko25.item(),fvcbm.TempResponse.dHa_Ko.item(),fvcbm.Oxy.item()]
         outdf = pd.DataFrame([vals],columns=vars)
         outdf.to_csv(savepath,index=False)
     elif(LightResponseType==1 & TemperatureResponseType==2):
         vars = ["species","Vcmax25","Jmax25","TPU25","Rd25","alpha","theta","Vcmax_dHa","Vcmax_Topt","Vcmax_dHd","Jmax_dHa","Jmax_Topt","Jmax_dHd","TPU_dHa","TPU_Topt","TPU_dHd","Rd_dHa","Gamma25","Gamma_dHa","Kc25","Kc_dHa","Ko25","Ko_dHa","O"]
-        vals = [species,fvcb.Vcmax25.item(),fvcb.Jmax25.item(),fvcb.TPU25.item(),fvcb.Rd25.item(),fvcb.LightResponse.alpha.item(),0.0,fvcb.TempResponse.dHa_Vcmax.item(),fvcb.TempResponse.Topt_Vcmax.item(),fvcb.TempResponse.dHd_Vcmax.item(),fvcb.TempResponse.dHa_Jmax.item(),fvcb.TempResponse.Topt_Jmax.item(),fvcb.TempResponse.dHd_Jmax.item(),fvcb.TempResponse.dHa_TPU.item(),fvcb.TempResponse.Topt_TPU.item(),fvcb.TempResponse.dHd_TPU.item(),fvcb.TempResponse.dHa_Rd.item(),fvcb.Gamma25.item(),fvcb.TempResponse.dHa_Gamma.item(),fvcb.Kc25.item(),fvcb.TempResponse.dHa_Kc.item(),fvcb.Ko25.item(),fvcb.TempResponse.dHa_Ko.item(),fvcb.Oxy.item()]
+        vals = [species,fvcbm.Vcmax25.item(),fvcbm.Jmax25.item(),fvcbm.TPU25.item(),fvcbm.Rd25.item(),fvcbm.LightResponse.alpha.item(),0.0,fvcbm.TempResponse.dHa_Vcmax.item(),fvcbm.TempResponse.Topt_Vcmax.item(),fvcbm.TempResponse.dHd_Vcmax.item(),fvcbm.TempResponse.dHa_Jmax.item(),fvcbm.TempResponse.Topt_Jmax.item(),fvcbm.TempResponse.dHd_Jmax.item(),fvcbm.TempResponse.dHa_TPU.item(),fvcbm.TempResponse.Topt_TPU.item(),fvcbm.TempResponse.dHd_TPU.item(),fvcbm.TempResponse.dHa_Rd.item(),fvcbm.Gamma25.item(),fvcbm.TempResponse.dHa_Gamma.item(),fvcbm.Kc25.item(),fvcbm.TempResponse.dHa_Kc.item(),fvcbm.Ko25.item(),fvcbm.TempResponse.dHa_Ko.item(),fvcbm.Oxy.item()]
         outdf = pd.DataFrame([vals],columns=vars)
         outdf.to_csv(savepath,index=False)
     elif(LightResponseType==1 & TemperatureResponseType==1):
         vars = ["species","Vcmax25","Jmax25","TPU25","Rd25","alpha","theta","Vcmax_dHa","Vcmax_Topt","Vcmax_dHd","Jmax_dHa","Jmax_Topt","Jmax_dHd","TPU_dHa","TPU_Topt","TPU_dHd","Rd_dHa","Gamma25","Gamma_dHa","Kc25","Kc_dHa","Ko25","Ko_dHa","O"]
-        vals = [species,fvcb.Vcmax25.item(),fvcb.Jmax25.item(),fvcb.TPU25.item(),fvcb.Rd25.item(),fvcb.LightResponse.alpha.item(),0.0,fvcb.TempResponse.dHa_Vcmax.item(),99999,1,fvcb.TempResponse.dHa_Jmax.item(),99999,1,fvcb.TempResponse.dHa_TPU.item(),99999,1,fvcb.TempResponse.dHa_Rd.item(),fvcb.Gamma25.item(),fvcb.TempResponse.dHa_Gamma.item(),fvcb.Kc25.item(),fvcb.TempResponse.dHa_Kc.item(),fvcb.Ko25.item(),fvcb.TempResponse.dHa_Ko.item(),fvcb.Oxy.item()]
+        vals = [species,fvcbm.Vcmax25.item(),fvcbm.Jmax25.item(),fvcbm.TPU25.item(),fvcbm.Rd25.item(),fvcbm.LightResponse.alpha.item(),0.0,fvcbm.TempResponse.dHa_Vcmax.item(),99999,1,fvcbm.TempResponse.dHa_Jmax.item(),99999,1,fvcbm.TempResponse.dHa_TPU.item(),99999,1,fvcbm.TempResponse.dHa_Rd.item(),fvcbm.Gamma25.item(),fvcbm.TempResponse.dHa_Gamma.item(),fvcbm.Kc25.item(),fvcbm.TempResponse.dHa_Kc.item(),fvcbm.Ko25.item(),fvcbm.TempResponse.dHa_Ko.item(),fvcbm.Oxy.item()]
         outdf = pd.DataFrame([vals],columns=vars)
         outdf.to_csv(savepath,index=False)
     else:
@@ -230,7 +230,7 @@ def plotFvCBModelFit(species,variety,parameterPath,compiledDataPath):
     plt.grid(True)
 
     plt.tight_layout()
-    plt.savefig("results/figures/"+species+variety+"_FvCB_Plot_Responses.png")
+    plt.savefig("photorch/results/figures/"+species+variety+"_FvCB_Plot_Responses.png")
     plt.show()
 
     # 3D Surface Plot
@@ -292,7 +292,7 @@ def plotFvCBModelFit(species,variety,parameterPath,compiledDataPath):
         plt.suptitle(f"{species}", fontsize=15)
     else:
         plt.suptitle(f"{species} var. {variety}", fontsize=15)
-    plt.savefig("results/figures/"+species+variety+"_FvCB_Plot_Surface.png")
+    plt.savefig("photorch/results/figures/"+species+variety+"_FvCB_Plot_Surface.png")
     plt.show()
 
     # 1:1 Comparison of Measured and Modeled Results
@@ -328,11 +328,11 @@ def plotFvCBModelFit(species,variety,parameterPath,compiledDataPath):
     else:
         plt.suptitle(f"{species} var. {variety}", fontsize=15)
     
-    plt.savefig("results/figures/"+species+variety+"_FvCB_Plot_R2.png")
+    plt.savefig("photorch/results/figures/"+species+variety+"_FvCB_Plot_R2.png")
     
 
 def saveBMFParametersToFile(species,var,bmf):
-    savepath = "results/parameters/"+species+var+"_BMF_Parameters.csv"
+    savepath = "photorch/results/parameters/"+species+var+"_BMF_Parameters.csv"
     vars = ["species","Em","i0","k","b"]
     vals = [species,bmf.Em[0].item(),bmf.i0[0].item(),bmf.k[0].item(),bmf.b[0].item()]
     outdf = pd.DataFrame([vals],columns=vars)
@@ -370,7 +370,7 @@ def plotBMFModelFit(species,variety,parameterPath,dataPath):
 
     ax1.scatter(Q_meas, D_meas, gsw_meas, c='r', s=30, label="Measured gsw")
     ax1.set_xticks([0,1000,2000])
-    plt.savefig("results/figures/"+species+variety+"_BMF_Plot_Surface.png")
+    plt.savefig("photorch/results/figures/"+species+variety+"_BMF_Plot_Surface.png")
     plt.show()
 
     # Plot 1:1 reference line
@@ -399,7 +399,7 @@ def plotBMFModelFit(species,variety,parameterPath,dataPath):
     else:
         plt.suptitle(f"{species} var. {variety}", fontsize=15)
         
-    plt.savefig("results/figures/"+species+variety+"_BMF_Plot_R2.png")
+    plt.savefig("photorch/results/figures/"+species+variety+"_BMF_Plot_R2.png")
     plt.show()
 
 def convert_params_to_buffers(dlmodel):
@@ -420,7 +420,7 @@ def convert_params_to_buffers(dlmodel):
 
 def selftest():
     device_test = ['cpu', 'cuda']
-    pathlcddfs = 'data/dfMAGIC043_lr.csv'
+    pathlcddfs = 'photorch/data/tests/dfMAGIC043_lr.csv'
     pdlMAGIC043 = pd.read_csv(pathlcddfs)
     lighttypes = [2, 1, 0]
     temptypes = [0, 1, 2]
@@ -461,7 +461,7 @@ def selftest():
                                     lcd.todevice(idevice)
 
                                 fvcbmMAGIC043 = fvcb.model(lcd, LightResp_type = lighttype, TempResp_type = temptype, onefit = onef, fitgm= True, fitgamma=KGfit, fitKo=KGfit, fitKc=KGfit, fitRd=Rdfit, fitRdratio=~Rdfit, printout=False)
-                                resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=True, printout=False,weakconstiter=5)
+                                resultfit = fvcb.fit(fvcbmMAGIC043, learn_rate=0.8, maxiteration= 10, minloss=1, recordweightsTF=False, fitcorr=True, printout=False, weakconstiter=5)
                                 resultfit.model()
                                 # check if all fit parameters are not nan
                             except:
@@ -492,7 +492,7 @@ def selftest():
     stomatallabels = ['BMF','BWB','MED']
     for stomataltype in stomatallabels:
         try:
-            datasc = pd.read_csv('data/steadystate_stomatalconductance.csv')
+            datasc = pd.read_csv('photorch/data/tests/steadystate_stomatalconductance.csv')
             scd = stomatal.initscdata(datasc, printout=False)
         except:
             raise ValueError('Error in running the stomatal conductance test: Initialization of stomatal data failed.')
