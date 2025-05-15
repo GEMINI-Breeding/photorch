@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='photorch',
-    version='1.4.1',
+    version='1.4.2',
     author='Tong Lei, Kyle T. Rizzo, Brian N. Bailey',
     description='PhoTorch is Python-based software for robust fitting of photosynthesis and stomatal conductance models based on leaf-level gas exchange data. ',
     packages=find_packages(),

@@ -133,7 +133,7 @@ def printFvCBParameters(fvcbm,LightResponseType=1,TemperatureResponseType=2,Fitg
         print(f"Ko = {fvcbm.Ko25[0]}")
 
 def saveFvCBParametersToFile(species,var,fvcbm,LightResponseType=1,TemperatureResponseType=2,Fitgm=False,FitGamma=False,FitKc=False,FitKo=False):
-    savepath = "photorch/results/parameters/"+species+var+"_FvCB_Parameters.csv"
+    savepath = "results/parameters/"+species+var+"_FvCB_Parameters.csv"
     if(LightResponseType==2 & TemperatureResponseType==2):
         vars = ["species","Vcmax25","Jmax25","TPU25","Rd25","alpha","theta","Vcmax_dHa","Vcmax_Topt","Vcmax_dHd","Jmax_dHa","Jmax_Topt","Jmax_dHd","TPU_dHa","TPU_Topt","TPU_dHd","Rd_dHa","Gamma25","Gamma_dHa","Kc25","Kc_dHa","Ko25","Ko_dHa","O"]
         vals = [species,fvcbm.Vcmax25.item(),fvcbm.Jmax25.item(),fvcbm.TPU25.item(),fvcbm.Rd25.item(),fvcbm.LightResponse.alpha.item(),fvcbm.LightResponse.theta.item(),fvcbm.TempResponse.dHa_Vcmax.item(),fvcbm.TempResponse.Topt_Vcmax.item(),fvcbm.TempResponse.dHd_Vcmax.item(),fvcbm.TempResponse.dHa_Jmax.item(),fvcbm.TempResponse.Topt_Jmax.item(),fvcbm.TempResponse.dHd_Jmax.item(),fvcbm.TempResponse.dHa_TPU.item(),fvcbm.TempResponse.Topt_TPU.item(),fvcbm.TempResponse.dHd_TPU.item(),fvcbm.TempResponse.dHa_Rd.item(),fvcbm.Gamma25.item(),fvcbm.TempResponse.dHa_Gamma.item(),fvcbm.Kc25.item(),fvcbm.TempResponse.dHa_Kc.item(),fvcbm.Ko25.item(),fvcbm.TempResponse.dHa_Ko.item(),fvcbm.Oxy.item()]
@@ -230,7 +230,7 @@ def plotFvCBModelFit(species,variety,parameterPath,compiledDataPath):
     plt.grid(True)
 
     plt.tight_layout()
-    plt.savefig("photorch/results/figures/"+species+variety+"_FvCB_Plot_Responses.png")
+    plt.savefig("results/figures/"+species+variety+"_FvCB_Plot_Responses.png")
     plt.show()
 
     # 3D Surface Plot
@@ -328,11 +328,11 @@ def plotFvCBModelFit(species,variety,parameterPath,compiledDataPath):
     else:
         plt.suptitle(f"{species} var. {variety}", fontsize=15)
     
-    plt.savefig("photorch/results/figures/"+species+variety+"_FvCB_Plot_R2.png")
+    plt.savefig("results/figures/"+species+variety+"_FvCB_Plot_R2.png")
     
 
 def saveBMFParametersToFile(species,var,bmf):
-    savepath = "photorch/results/parameters/"+species+var+"_BMF_Parameters.csv"
+    savepath = "results/parameters/"+species+var+"_BMF_Parameters.csv"
     vars = ["species","Em","i0","k","b"]
     vals = [species,bmf.Em[0].item(),bmf.i0[0].item(),bmf.k[0].item(),bmf.b[0].item()]
     outdf = pd.DataFrame([vals],columns=vars)
@@ -370,7 +370,7 @@ def plotBMFModelFit(species,variety,parameterPath,dataPath):
 
     ax1.scatter(Q_meas, D_meas, gsw_meas, c='r', s=30, label="Measured gsw")
     ax1.set_xticks([0,1000,2000])
-    plt.savefig("photorch/results/figures/"+species+variety+"_BMF_Plot_Surface.png")
+    plt.savefig("results/figures/"+species+variety+"_BMF_Plot_Surface.png")
     plt.show()
 
     # Plot 1:1 reference line
@@ -399,7 +399,7 @@ def plotBMFModelFit(species,variety,parameterPath,dataPath):
     else:
         plt.suptitle(f"{species} var. {variety}", fontsize=15)
         
-    plt.savefig("photorch/results/figures/"+species+variety+"_BMF_Plot_R2.png")
+    plt.savefig("results/figures/"+species+variety+"_BMF_Plot_R2.png")
     plt.show()
 
 def convert_params_to_buffers(dlmodel):
