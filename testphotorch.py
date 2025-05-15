@@ -1,11 +1,11 @@
-from photorch import src as fvcb, src as stomatal, src as util
+from photorch import *
 import pandas as pd
 import matplotlib.pyplot as plt
 
 util.selftest() # Check if all models are working
 
 # FvCB model fitting
-dftest = pd.read_csv('data/tests/dfMAGIC043_lr.csv')
+dftest = pd.read_csv('photorch/data/tests/dfMAGIC043_lr.csv')
 lcd = fvcb.initLicordata(dftest, preprocess=True, lightresp_id = [118])
 fvcbm = fvcb.model(lcd, LightResp_type = 2, TempResp_type = 0, onefit = False)
 fitresult = fvcb.fit(fvcbm, learn_rate= 0.06, maxiteration = 20000, minloss= 1, fitcorr=False) # If temp type is 0, do not set fitcorr to True
@@ -44,7 +44,7 @@ plt.ylabel('A ($\mu$mol m$^{-2}$ s$^{-1}$)')
 plt.show()
 
 # Stomatal model fitting
-datasc = pd.read_csv('data/tests/steadystate_stomatalconductance.csv')
+datasc = pd.read_csv('photorch/data/tests/steadystate_stomatalconductance.csv')
 scd = stomatal.initscdata(datasc)
 scm = stomatal.BMF(scd)
 scm = stomatal.fit(scm, learnrate = 0.5, maxiteration = 20000)
