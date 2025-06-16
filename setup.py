@@ -8,7 +8,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        'photorch': ['data/*.json'],  # adjust path/type as needed
+        'photorch': ['data/tests/*.csv'],  # adjust path/type as needed
     },
     install_requires=['torch','numpy','pandas','scipy','matplotlib'],  # Add dependencies here
     python_requires='>=3.6',

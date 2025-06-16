@@ -291,6 +291,3 @@ data/stomatal/curves/{FittingGroup}
 data/stomatal/survey/{FittingGroup}
 ```
 The species_to_fit (required) and species_variety (can be left as an empty string, $``"$) variables are just to name the saved parameters and plots, and are not required to match the path given for the input data.
-
-The inclusive of the use of stomatal models within this notebook interface is under development, but is of course available to program manually with PhoTorch.
-

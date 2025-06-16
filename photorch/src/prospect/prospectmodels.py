@@ -218,3 +218,77 @@ class Loss(nn.Module):
         #     loss += correlationrt.getvalue(pred_tran[:, :-150],0.9)
 
         return loss
+    
+
+class fitparams(nn.Module):
+    def __init__(self, num_leaves=1):
+        super().__init__()
+
+        _, nr_d, kab_d, kcar_d, kant_d, kbrown_d, kw_d, km_d = np.loadtxt('prospect/prospectd_absc.txt', unpack=True)
+        self.nr = nn.Parameter(torch.tensor(nr_d, dtype=torch.float))
+        self.kab = nn.Parameter(torch.tensor(kab_d, dtype=torch.float))
+        self.kcar = nn.Parameter(torch.tensor(kcar_d, dtype=torch.float))
+        self.kant = nn.Parameter(torch.tensor(kant_d, dtype=torch.float))
+        # self.kbrown = nn.Parameter(torch.tensor(kbrown_d, dtype=torch.float))
+        self.kw = nn.Parameter(torch.tensor(kw_d, dtype=torch.float))
+        self.km = nn.Parameter(torch.tensor(km_d, dtype=torch.float))
+        self.lambdas = torch.arange(400, 2501).float()
+        self.n_lambda = len(self.lambdas)
+        self.getav = getav()
+        self.alpha = torch.tensor([40.], dtype=torch.float)
+        self.expi = expiTorch()
+        self.getonelayer = reftrans_onelayer()
+
+    def forward(self,N,cab,car,water,lma,cant):
+        kall = (cab * self.kab + car * self.kcar + cant * self.kant + water * self.kw + lma * self.km) / N
+        kall = torch.clamp(kall, min=0.0001)
+        t1 = (1 - kall) * torch.exp(-kall)
+        t2 = torch.pow(kall, 2) * (-self.expi(-kall))
+
+        tau = t1 + t2
+
+        r, t, Ra, Ta, denom = self.getonelayer(self.alpha, self.nr, tau)
+        rpt = r + t
+        rmt = r - t
+        D = torch.sqrt((1 + rpt) * (1 + rmt) * (1. - rmt) * (1. - rpt))
+        rq = torch.pow(r, 2)
+        tq = torch.pow(t, 2)
+        rqmtq = rq - tq
+        a = (1 + rqmtq + D) / (2 * r)
+        b = (1 - rqmtq + D) / (2 * t)
+        bnm1 = torch.pow(b, self.N - 1)
+        bn2 = torch.pow(bnm1, 2)
+        a2 = a * a
+        denom = a2 * bn2 - 1
+        Rsub = a * (bn2 - 1) / denom
+        Tsub = bnm1 * (a2 - 1) / denom
+
+        # Case of zero absorption
+        j = r + t >= 1.
+        if torch.sum(j) > 0:
+            N_repeat = self.N.expand(-1, t.shape[1])
+            Tsub[j] = t[j] / (t[j] + (1 - t[j]) * (N_repeat[j] - 1))
+            Rsub[j] = 1 - Tsub[j]
+
+        # Reflectance and transmittance of the leaf: combine top layer with next N-1 layers
+        denom = 1 - Rsub * r
+        tran = Ta * Tsub / denom
+        refl = Ra + Ta * Rsub * t / denom
+
+        return refl, tran
+    
+
+class Loss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, promodel, pred_ref, target_ref, pred_tran=None, target_tran=None):
+
+
+        loss += self.mse(pred_ref[:, :-150], target_ref[:, :-100])
+        if pred_tran is not None and target_tran is not None:
+            loss += self.mse(pred_tran[:, :-150], target_tran[:, :-100])
+
+
+        return loss
