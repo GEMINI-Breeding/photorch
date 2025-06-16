@@ -275,7 +275,7 @@ def plotFvCBModelFit(species,variety,parameterPath,compiledDataPath):
     A = A.reshape(Ci.shape)
 
     # Plot modeled surface
-    ax2.plot_surface(Ci, Q, A, cmap='YlGn', edgecolor='none', alpha=0.8,label="FvCB Fit")
+    ax2.plot_surface(Ci, Q, A, cmap='YlGn', edgecolor='none', alpha=0.8)#,label="FvCB Fit")
     ax2.set_xlabel(r"$C_i$ ($\mu$mol mol$^{-1}$)", fontsize=13)
     ax2.set_ylabel(r"$Q$ ($\mu$mol m$^{-2}$ s$^{-1}$)", fontsize=13)
     ax2.set_zlabel(r"$A$ ($\mu$mol m$^{-2}$ s$^{-1}$)", fontsize=13)
@@ -292,7 +292,7 @@ def plotFvCBModelFit(species,variety,parameterPath,compiledDataPath):
         plt.suptitle(f"{species}", fontsize=15)
     else:
         plt.suptitle(f"{species} var. {variety}", fontsize=15)
-    plt.savefig("photorch/results/figures/"+species+variety+"_FvCB_Plot_Surface.png")
+    plt.savefig("results/figures/"+species+variety+"_FvCB_Plot_Surface.png")
     plt.show()
 
     # 1:1 Comparison of Measured and Modeled Results

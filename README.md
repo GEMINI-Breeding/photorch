@@ -148,16 +148,10 @@ Ac_id = Ac[indices_id]
 A_id_mea, Ci_id, Q_id, Tlf_id = lcd.getDatabyID(lcd.IDs[id_index])
 ```
 
-### A Notebook Interface for Routine Single Group Fitting, Plotting, and Evaluating
-For routine fitting of single fitting groups, an easy to use jupyter notebook is available. First, install jupyterlab with
-```bash
-pip install jupyterlab
-```
-Once installed, open a terminal window, traverse to your PhoTorch directory and open the notebook with 
-```bash 
-jupyter-lab PhotosynthesisFitting.ipynb
-```
-which should open the notebook and the file directory in an interface using your default web browser. From here, one can easily change model settings in the User Settings section of each code block. The first block will process your data (compile all response curves) and the second block with fit the processed data with PhoTorch.
+### Routine Single Group Fitting, Plotting, and Evaluating
+For routine fitting of single fitting groups, an easy to use example is available.
+
+From here, one can easily change model settings in the User Settings section of each code block. The first block will process your data (compile all response curves) and the second block with fit the processed data with PhoTorch.
 
 ```python
 # Process ACi Data and Verify the Printed Curves are Those Desired to Fit
@@ -270,16 +264,10 @@ k_id = scm.k[id_index]
 b_id = scm.b[id_index]
 ```
 
-### A Notebook Interface for Routine Single Group Fitting, Plotting, and Evaluating
-For routine fitting of single fitting groups, an easy to use jupyter notebook is available. First, install jupyterlab with
-```bash
-pip install jupyterlab
-```
-Once installed, open a terminal window, traverse to your PhoTorch directory and open the notebook with 
-```bash 
-jupyter-lab PhotosynthesisFitting.ipynb
-```
-which should open the notebook and the file directory in an interface using your default web browser. From here, one can easily change model settings in the User Settings section of the code block.
+### Routine Single Group Fitting, Plotting, and Evaluating
+For routine fitting of single fitting groups.
+
+From here, one can easily change model settings in the User Settings section of the code block.
 
 ```python
 # Process Stomatal Data and Observe the Model Fit
@@ -301,6 +289,4 @@ data/stomatal/survey/{FittingGroup}
 The species_to_fit (required) and species_variety (can be left as an empty string, $``"$) variables are just to name the saved parameters and plots, and are not required to match the path given for the input data.
 
 The inclusive of the use of stomatal models within this notebook interface is under development, but is of course available to program manually with PhoTorch.
-  
-## 3. PROSPECT-X model usage
-The PROSPECT-X model is under development.
+
