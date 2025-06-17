@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import prospect.prospectmodels as prospect
+import photorch.src.prospect.prospectmodels as prospect
 def getAnthocyanin(refspectra, wavelength = torch.arange(400,2501,1)):
     rgreen = refspectra[:, (wavelength>540) & (wavelength<560)]
     rred = refspectra[:, (wavelength>690) & (wavelength<710)]

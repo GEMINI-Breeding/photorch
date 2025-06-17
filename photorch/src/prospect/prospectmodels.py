@@ -221,10 +221,10 @@ class Loss(nn.Module):
     
 
 class fitparams(nn.Module):
-    def __init__(self, num_leaves=1):
+    def __init__(self):
         super().__init__()
 
-        _, nr_d, kab_d, kcar_d, kant_d, kbrown_d, kw_d, km_d = np.loadtxt('prospect/prospectd_absc.txt', unpack=True)
+        _, nr_d, kab_d, kcar_d, kant_d, kbrown_d, kw_d, km_d = np.loadtxt('photorch/src/prospect/prospectd_absc.txt', unpack=True)
         self.nr = nn.Parameter(torch.tensor(nr_d, dtype=torch.float))
         self.kab = nn.Parameter(torch.tensor(kab_d, dtype=torch.float))
         self.kcar = nn.Parameter(torch.tensor(kcar_d, dtype=torch.float))
@@ -256,7 +256,7 @@ class fitparams(nn.Module):
         rqmtq = rq - tq
         a = (1 + rqmtq + D) / (2 * r)
         b = (1 - rqmtq + D) / (2 * t)
-        bnm1 = torch.pow(b, self.N - 1)
+        bnm1 = torch.pow(b, N - 1)
         bn2 = torch.pow(bnm1, 2)
         a2 = a * a
         denom = a2 * bn2 - 1
@@ -266,7 +266,7 @@ class fitparams(nn.Module):
         # Case of zero absorption
         j = r + t >= 1.
         if torch.sum(j) > 0:
-            N_repeat = self.N.expand(-1, t.shape[1])
+            N_repeat = N.expand(-1, t.shape[1])
             Tsub[j] = t[j] / (t[j] + (1 - t[j]) * (N_repeat[j] - 1))
             Rsub[j] = 1 - Tsub[j]
 
@@ -278,17 +278,23 @@ class fitparams(nn.Module):
         return refl, tran
     
 
-class Loss(nn.Module):
+class Lossfit(nn.Module):
     def __init__(self):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, promodel, pred_ref, target_ref, pred_tran=None, target_tran=None):
+    def forward(self, fitparams, pred_ref, target_ref, pred_tran=None, target_tran=None):
 
+        loss = torch.sum(torch.clamp(0-fitparams.nr, min=0))
+        loss += torch.sum(torch.clamp(0-fitparams.kab, min=0))
+        loss += torch.sum(torch.clamp(0-fitparams.kcar, min=0))
+        loss += torch.sum(torch.clamp(0-fitparams.kant, min=0))
+        loss += torch.sum(torch.clamp(0-fitparams.kw, min=0))
+        loss += torch.sum(torch.clamp(0-fitparams.km, min=0))
 
-        loss += self.mse(pred_ref[:, :-150], target_ref[:, :-100])
+        loss += self.mse(pred_ref[:, :], target_ref[:, :])
         if pred_tran is not None and target_tran is not None:
-            loss += self.mse(pred_tran[:, :-150], target_tran[:, :-100])
+            loss += self.mse(pred_tran[:, :], target_tran[:, :])
 
 
         return loss
