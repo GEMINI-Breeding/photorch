@@ -214,7 +214,7 @@ More details about these four models can be found at: https://baileylab.ucdavis.
 
 Create a python file in the PhoTorch directory and import necessary packages.
 ```bash
-import stomatal
+from photorch import stomatal
 import pandas as pd
 import torch
 ```
