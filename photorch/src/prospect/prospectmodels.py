@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from scipy.special import expi
 from torch.autograd import Function
+import os
 
 class ExpiFunction(Function):
     @staticmethod
@@ -106,7 +107,10 @@ class prospectdcore(nn.Module):
         self.lma = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 0.02)  # leaf mass per unit area (g/cm2)
         self.cant = nn.Parameter(torch.ones(num_leaves, 1, dtype=torch.float) * 1.0)  # anthocyanin content (mu g/cm2)
 
-        _, nr_d, kab_d, kcar_d, kant_d, kbrown_d, kw_d, km_d = np.loadtxt('prospect/prospectd_absc.txt', unpack=True)
+        file_dir = os.path.dirname(__file__)  # directory of prospectmodels.py
+        abs_path = os.path.join(file_dir, 'prospectd_absc.txt')
+        _, nr_d, kab_d, kcar_d, kant_d, kbrown_d, kw_d, km_d = np.loadtxt(abs_path, unpack=True)
+        # _, nr_d, kab_d, kcar_d, kant_d, kbrown_d, kw_d, km_d = np.loadtxt('prospect/prospectd_absc.txt', unpack=True)
         self.nr = torch.tensor(nr_d, dtype=torch.float)
         self.kab = torch.tensor(kab_d, dtype=torch.float)
         self.kcar = torch.tensor(kcar_d, dtype=torch.float)
