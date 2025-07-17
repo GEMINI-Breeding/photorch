@@ -214,7 +214,7 @@ More details about these four models can be found at: https://baileylab.ucdavis.
 
 Create a python file in the PhoTorch directory and import necessary packages.
 ```bash
-import stomatal
+from photorch import stomatal
 import pandas as pd
 import torch
 ```
@@ -238,11 +238,9 @@ The data to be loaded should be:
 datasc = pd.read_csv('data/steadystate_stomatalconductance.csv')
 scd = stomatal.initscdata(datasc)
 ```
-### Initialize the BMF model and fit the parameters Emerson effect (Em), quantum yield of electron transport (i0), curvature factor (k), and intercept (b).
+### Initialize the BMF model and fit the semi-parameters Em, i0, k, and b, derived from lumping physiological terms in the original hydromechanical model.
 ```bash
 scm = stomatal.BMF(scd)
-#scm = stomatal.BWB(scd) 
-#scm = stomatal.MED(scd)
 fitresult = stomatal.fit(scm, learnrate = 0.5, maxiteration =20000)
 scm = fitresult.model
 ```
