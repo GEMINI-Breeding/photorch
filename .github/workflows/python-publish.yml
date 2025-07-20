@@ -39,12 +39,6 @@ jobs:
           python -m pip install --upgrade build
           python -m build
 
-      # 🚀 Upload artifacts
-      - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
 
   pypi-publish:
     runs-on: ubuntu-latest
@@ -55,12 +49,6 @@ jobs:
       name: pypi
 
     steps:
-      - name: Download release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
-
       # 🧹 Nuke old junk again
       - name: Clean workspace
         run: |
