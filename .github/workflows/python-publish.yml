@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Clean previous builds
-        run: rm -rf dist/*
+      - name: Full clean of old builds
+        run: rm -rf build/ dist/ *.egg-info
 
       - name: Set version from GitHub release tag
         run: |
