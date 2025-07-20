@@ -20,24 +20,26 @@ jobs:
         with:
           python-version: "3.x"
 
-      # 🧹 Full cleanup before build
-      - name: Clean previous builds
-        run: rm -rf build/ dist/ *.egg-info
+      # 🧹 Clean EVERYTHING before build
+      - name: Clean previous builds and artifacts
+        run: |
+          echo "Cleaning build/, dist/, and egg-info..."
+          rm -rf build/ dist/ *.egg-info
 
-      # 🔥 Set version from GitHub tag
+      # 🔥 Force version from GitHub tag
       - name: Set version from GitHub release tag
         run: |
-          version=${GITHUB_REF_NAME#v}  # Strip leading "v" if present
+          version=${GITHUB_REF_NAME#v}  # Strip 'v' prefix
           echo "Setting photorch version to $version in setup.py"
           sed -i -E "s/version *= *['\"]([0-9]+\.[0-9]+\.[0-9]+)['\"](,?)/version='$version'\2/" setup.py
 
-      # 📦 Build distributions
+      # 📦 Build only the tagged version
       - name: Build release distributions
         run: |
           python -m pip install --upgrade build
           python -m build
 
-      # 🏹 Upload artifacts for later use
+      # 🚀 Upload artifacts
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -59,23 +61,26 @@ jobs:
           name: release-dists
           path: dist/
 
-      # 🧹 Clean any leftover build junk again
-      - name: Full clean before upload
-        run: rm -rf build/ *.egg-info
-
-      # ❌ Check for old versions in dist/
-      - name: Fail if dist/ contains wrong versions
+      # 🧹 Nuke old junk again
+      - name: Clean workspace
         run: |
-          echo "Checking dist/ for unexpected files..."
+          echo "Cleaning build/, dist/, and egg-info before upload..."
+          rm -rf build/ *.egg-info
+
+      # ❌ Fail if any .whl not matching the tag exists
+      - name: Check dist/ for unwanted versions
+        run: |
+          echo "Verifying dist/ only contains photorch-${GITHUB_REF_NAME#v}..."
           ls -lh dist/
-          version=${GITHUB_REF_NAME#v}
-          if ls dist/ | grep -v "photorch-$version" | grep '.whl'; then
-            echo "❌ ERROR: Found old versions in dist/. Only photorch-$version should exist."
+          unexpected=$(ls dist/ | grep -v "photorch-${GITHUB_REF_NAME#v}")
+          if [ -n "$unexpected" ]; then
+            echo "❌ ERROR: Found unexpected files in dist/:"
+            echo "$unexpected"
             exit 1
           fi
 
       # 🚀 Upload ONLY the tagged version
-      - name: Publish release distribution to PyPI
+      - name: Publish release to PyPI
         run: |
           python -m pip install --upgrade twine
           version=${GITHUB_REF_NAME#v}
@@ -84,4 +89,3 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-          TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
