@@ -51,12 +51,13 @@ jobs:
           name: release-dists
           path: dist/
 
-      - name: Publish latest distribution to PyPI
+      - name: Publish release distribution to PyPI
         run: |
           python -m pip install --upgrade twine
-          latest_file=$(ls -t dist/*.whl | head -n 1)
-          echo "Uploading $latest_file to PyPI..."
-          twine upload --non-interactive --skip-existing "$latest_file"
+          version=${GITHUB_REF_NAME}
+          version=${version#v}  # strip leading "v"
+          echo "Uploading photorch-$version-py3-none-any.whl to PyPI..."
+          twine upload --non-interactive --skip-existing "dist/photorch-$version-py3-none-any.whl"
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
