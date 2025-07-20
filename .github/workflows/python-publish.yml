@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  release-build:
+  publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,55 +20,35 @@ jobs:
         with:
           python-version: "3.x"
 
-      # 🧹 Clean EVERYTHING before build
-      - name: Clean previous builds and artifacts
+      - name: Clean previous builds
         run: |
           echo "Cleaning build/, dist/, and egg-info..."
           rm -rf build/ dist/ *.egg-info
 
-      # 🔥 Force version from GitHub tag
       - name: Set version from GitHub release tag
         run: |
-          version=${GITHUB_REF_NAME#v}  # Strip 'v' prefix
+          version=${GITHUB_REF_NAME#v}
           echo "Setting photorch version to $version in setup.py"
           sed -i -E "s/version *= *['\"]([0-9]+\.[0-9]+\.[0-9]+)['\"](,?)/version='$version'\2/" setup.py
 
-      # 📦 Build only the tagged version
       - name: Build release distributions
         run: |
           python -m pip install --upgrade build
           python -m build
 
-
-  pypi-publish:
-    runs-on: ubuntu-latest
-    needs: release-build
-    permissions:
-      id-token: write
-    environment:
-      name: pypi
-
-    steps:
-      # 🧹 Nuke old junk again
-      - name: Clean workspace
-        run: |
-          echo "Cleaning build/, dist/, and egg-info before upload..."
-          rm -rf build/ *.egg-info
-
-      # ❌ Fail if any .whl not matching the tag exists
+      # 🛑 Fail if any wheel not matching the tag is found
       - name: Check dist/ for unwanted versions
         run: |
-          echo "Verifying dist/ only contains photorch-${GITHUB_REF_NAME#v}..."
+          echo "Checking dist/ for unexpected files..."
           ls -lh dist/
-          unexpected=$(ls dist/ | grep -v "photorch-${GITHUB_REF_NAME#v}")
-          if [ -n "$unexpected" ]; then
+          version=${GITHUB_REF_NAME#v}
+          if ls dist/ | grep -v "photorch-$version" | grep '.whl'; then
             echo "❌ ERROR: Found unexpected files in dist/:"
-            echo "$unexpected"
+            ls dist/
             exit 1
           fi
 
-      # 🚀 Upload ONLY the tagged version
-      - name: Publish release to PyPI
+      - name: Publish to PyPI
         run: |
           python -m pip install --upgrade twine
           version=${GITHUB_REF_NAME#v}
@@ -77,3 +57,4 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_REPOSITORY_URL: https://upload.pypi.org/legacy/
