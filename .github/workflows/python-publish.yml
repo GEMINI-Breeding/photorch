@@ -29,9 +29,12 @@ jobs:
         run: rm -rf dist/*
       - name: Build release distributions
         run: |
-          # NOTE: put your own distribution build steps here.
           python -m pip install build
-          python -m build
+          # Extract version from GitHub release tag (assumes tag like v1.4.5)
+          version=${GITHUB_REF##*/}
+          version=${version#v}
+          echo "Building version $version"
+          python setup.py sdist bdist_wheel
 
       - name: Upload distributions
         uses: actions/upload-artifact@v4
