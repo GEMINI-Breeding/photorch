@@ -23,6 +23,13 @@ jobs:
       - name: Clean previous builds
         run: rm -rf dist/*
 
+      - name: Set version from GitHub release tag
+        run: |
+          version=${GITHUB_REF_NAME#v}  # Strip leading 'v' from tag like v1.4.6
+          echo "Setting photorch version to $version"
+          # Replace version in setup.py
+          sed -i "s/version='.*'/version='$version'/" setup.py
+
       - name: Build release distributions
         run: |
           python -m pip install --upgrade build
@@ -41,8 +48,6 @@ jobs:
       id-token: write
     environment:
       name: pypi
-      # Optional: uncomment and update if you want a PyPI link in deployment status
-      # url: https://pypi.org/project/YOURPROJECT/
 
     steps:
       - name: Download release artifacts
@@ -54,10 +59,9 @@ jobs:
       - name: Publish release distribution to PyPI
         run: |
           python -m pip install --upgrade twine
-          version=${GITHUB_REF_NAME}
-          version=${version#v}  # strip leading "v"
-          echo "Uploading photorch-$version-py3-none-any.whl to PyPI..."
-          twine upload --non-interactive --skip-existing "dist/photorch-$version-py3-none-any.whl"
+          version=${GITHUB_REF_NAME#v}
+          echo "Uploading photorch-$version to PyPI..."
+          twine upload --non-interactive --skip-existing "dist/photorch-$version"*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
